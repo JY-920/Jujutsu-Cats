@@ -1,0 +1,25 @@
+allprojects {
+    afterEvaluate {
+        tasks.register('compileShinjukuRuntimeReview', JavaCompile) {
+            dependsOn tasks.named('createMinecraftArtifacts'), tasks.named('prepareSableApi')
+            source project.file('tools/ShinjukuRuntimeReview.java')
+            source project.files(
+                'src/main/java/dev/jujutsuvfx/client/ShinjukuActorGeometry.java',
+                'src/main/java/dev/jujutsuvfx/client/ShinjukuActorModel.java',
+                'src/main/java/dev/jujutsuvfx/entity/ShinjukuActor.java')
+            // Keep this bounded review independent of unrelated concurrent server edits.
+            classpath = sourceSets.main.compileClasspath + project.files(sourceSets.main.output.classesDirs.files)
+            destinationDirectory = layout.buildDirectory.dir('shinjuku-runtime-review/classes')
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+            options.encoding = 'UTF-8'
+        }
+        tasks.register('verifyShinjukuRuntime', JavaExec) {
+            dependsOn tasks.named('compileShinjukuRuntimeReview')
+            classpath = project.files(layout.buildDirectory.dir('shinjuku-runtime-review/classes')) + project.files(sourceSets.main.runtimeClasspath.files)
+            if (providers.gradleProperty('shinjukuReviewClasses').isPresent())
+                classpath = project.files(providers.gradleProperty('shinjukuReviewClasses').get()) + classpath
+            mainClass = 'dev.jujutsuvfx.client.ShinjukuRuntimeReview'
+            args project.file('src/main/resources').absolutePath, project.file('build/shinjuku-runtime-review.json').absolutePath
+        }
+    }
+}

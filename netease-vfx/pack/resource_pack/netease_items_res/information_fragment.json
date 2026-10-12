@@ -1,0 +1,11 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:information_fragment"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:information_fragment"
+    }
+  }
+}

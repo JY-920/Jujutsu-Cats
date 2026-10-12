@@ -1,0 +1,9 @@
+{"vertex":"jujutsuvfx:water_reflection","fragment":"jujutsuvfx:water_reflection","samplers":[],"attributes":["Position","UV0","Color"],"uniforms":[
+{"name":"RiftView","type":"matrix4x4","count":16,"values":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]},
+{"name":"RiftProjection","type":"matrix4x4","count":16,"values":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]},
+{"name":"LocalToWater","type":"matrix4x4","count":16,"values":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]},
+{"name":"Offset","type":"float","count":3,"values":[0,0,0]},
+{"name":"Reveal","type":"float","count":1,"values":[1]},
+{"name":"Visibility","type":"float","count":1,"values":[1]},
+{"name":"Radius","type":"float","count":1,"values":[16]},
+{"name":"Mode","type":"float","count":1,"values":[0]}]}

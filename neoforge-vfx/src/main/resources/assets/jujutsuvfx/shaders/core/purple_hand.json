@@ -1,0 +1,14 @@
+{
+  "blend": {"func": "add", "srcrgb": "srcalpha", "dstrgb": "1-srcalpha", "srcalpha": "1", "dstalpha": "1-srcalpha"},
+  "vertex": "jujutsuvfx:fist_ink",
+  "fragment": "jujutsuvfx:purple_hand",
+  "attributes": ["Position", "UV0", "Color"],
+  "samplers": [],
+  "uniforms": [
+    {"name": "Time", "type": "float", "count": 1, "values": [0]},
+    {"name": "Charge", "type": "float", "count": 1, "values": [0]},
+    {"name": "Release", "type": "float", "count": 1, "values": [-1]},
+    {"name": "Visibility", "type": "float", "count": 1, "values": [1]},
+    {"name": "Seed", "type": "float", "count": 1, "values": [0]}
+  ]
+}

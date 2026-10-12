@@ -1,0 +1,47 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "jujutsuvfx:gojo_cat",
+      "materials": {
+        "body": "entity_alphatest",
+        "details": "entity_alphatest",
+        "eyes": "entity_emissive_alpha"
+      },
+      "textures": {
+        "body": "textures/entity/gojo_cat",
+        "details": "textures/entity/gojo_cat_details",
+        "eyes": "textures/entity/gojo_cat"
+      },
+      "geometry": {
+        "body": "geometry.jujutsuvfx.gojo_cat.body",
+        "details": "geometry.jujutsuvfx.gojo_cat.details",
+        "eyes": "geometry.jujutsuvfx.gojo_cat.eyes"
+      },
+      "animations": {
+        "idle": "animation.jujutsuvfx.idle",
+        "walk": "animation.jujutsuvfx.walk",
+        "cast": "animation.jujutsuvfx.cast",
+        "blindfold": "animation.jujutsuvfx.blindfold",
+        "blindfold_controller": "controller.animation.jujutsuvfx.blindfold"
+      },
+      "scripts": {
+        "animate": [
+          "idle",
+          "walk",
+          "cast",
+          "blindfold_controller"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.jujutsuvfx.gojo_body",
+        "controller.render.jujutsuvfx.gojo_details",
+        "controller.render.jujutsuvfx.gojo_eyes"
+      ],
+      "spawn_egg": {
+        "base_color": "#f4f6ff",
+        "overlay_color": "#35b9e8"
+      }
+    }
+  }
+}

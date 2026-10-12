@@ -1,0 +1,40 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.mahoraga_cat.wheel_spin": {
+      "loop": true,
+      "animation_length": 4,
+      "bones": {
+        "wheel": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "1.00": [
+              0,
+              -90,
+              0
+            ],
+            "2.00": [
+              0,
+              -180,
+              0
+            ],
+            "3.00": [
+              0,
+              -270,
+              0
+            ],
+            "4.00": [
+              0,
+              -360,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:cleave"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:cleave",
+      "netease:show_in_hand": {
+        "value": false
+      }
+    }
+  }
+}

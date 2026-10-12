@@ -1,0 +1,282 @@
+{
+  "meta": {
+    "format_version": "4.10",
+    "model_format": "java_block",
+    "box_uv": false
+  },
+  "name": "end_portal_frame",
+  "model_identifier": "end_portal_frame",
+  "parent": "block/block",
+  "ambientocclusion": true,
+  "front_gui_light": false,
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "name": "frame",
+      "type": "cube",
+      "uuid": "f80f1d68-6384-4777-9214-5efaa45a0d66",
+      "box_uv": false,
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        13,
+        16
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "autouv": 0,
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "shade": true,
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "texture": 2,
+          "cullface": "north"
+        },
+        "east": {
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "texture": 2,
+          "cullface": "east"
+        },
+        "south": {
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "texture": 2,
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "texture": 2,
+          "cullface": "west"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 0,
+          "cullface": "down"
+        }
+      }
+    }
+  ],
+  "outliner": [
+    "f80f1d68-6384-4777-9214-5efaa45a0d66"
+  ],
+  "textures": [
+    {
+      "uuid": "fe45d465-af17-4693-a00d-81a02b4fba44",
+      "name": "end_stone.png",
+      "id": "bottom",
+      "path": "",
+      "relative_path": "",
+      "folder": "block",
+      "namespace": "minecraft",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": true,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1UlEQVQ4T32SIRLCUAxEc/9ajsARsODAITEIJBJZgSmTzrzO61IQf9rkb5Ldza/Hcz/d7rv59P9rPMzH8fk0TNfLsOA6R1xZzAWNOibHMLD9rZzqady5YTYpF/xrApPxfVyxK2vj0nQBdlPjOu4ze9AAJmUT+2LcykRrtRzT/bWlIoFuu04TDwBHXA1AW5pHrv/Th2ULXk86v7Uhmz5LSFp2HyDgrVdbpkWhtScb55YtUJjbSIPtDY2KQr8DNgE7FyXL8iQ2witL/TYc3NdLdJG/9sCyPqRTV/aJ4BsfAAAAAElFTkSuQmCC"
+    },
+    {
+      "uuid": "31f3eeea-9482-42a4-8502-8e21f577c6e4",
+      "name": "end_portal_frame_top.png",
+      "id": "top",
+      "path": "",
+      "relative_path": "",
+      "folder": "block",
+      "namespace": "minecraft",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": true,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NwKk7/TwlmABEzj03+r+JsDccg/tb1lWC2foTf/wOH2rGqgRsAEgDRIIUgjSA2TOOTZ2vgtoHkQGIweRQDQJJvP+0Ea4AZAlMIwiAxkBxIDYiN1QCYbTBNMC/AnA1iwyzAMADkNJDpIDazEB9WDFILUgNSi2IAKEBgBoAkQIrZJEUwMEgOZgBKIMICjJABOF2AzQskGUCsF5ANwOkFslyAHI0wCRiNjPFGI7aEBEsPRCUkbEkZpAGWdPEmZVCAINsGC1Rk27GpgRtACQYADsY0OgwN300AAAAASUVORK5CYII="
+    },
+    {
+      "uuid": "e872ac5e-6303-4f1f-bb3f-90960d25b136",
+      "name": "end_portal_frame_side.png",
+      "id": "side",
+      "path": "",
+      "relative_path": "",
+      "folder": "block",
+      "namespace": "minecraft",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": true,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA3UlEQVQ4y9VRKw7CUBDcO2A4BSiCQ/QAaBySA5BwBAySGjyCBIvAgKMOialAIpEVmCXTZF6GTUOaoGgyfZ/dmd3ZZ/b/Xzaf+S+w/mTsm2Lt3cHIO71hKyAXHHBrAZL3y6kfd4uvQA5FkgAuELycVwnX4hMaQ24SYHWsSLyVuT+rg98fW69ep3rFHYWwh3dyDGrqDapN0MFp18aW2g6QoGVDS4R6bALjyjF4hGcCZ/pWxJkkAZDikCgUybEI7gy/+GxajXs+JQtQKHVAEa2KWHzKmGdUU2Jc1RI7ZOwNvQEyKKxM2nsAAAAASUVORK5CYII="
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.625,
+        0.625,
+        0.625
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    }
+  }
+}

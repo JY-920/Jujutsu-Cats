@@ -1,0 +1,41 @@
+# Active projects only. Local migration scripts, old prototypes and deliveries stay local.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/forge-vfx/
+!/neoforge-vfx/
+!/netease-vfx/
+!/models/
+
+**/.gradle/
+**/build/
+**/run/
+**/dist/
+**/logs/
+**/__pycache__/
+**/node_modules/
+**/.venv/
+**/.idea/
+**/.vscode/
+**/.DS_Store
+*.log
+*.pyc
+*.pyo
+*.zip
+*.mcaddon
+*.mcpack
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# Archived art iterations and machine-specific port notes are not runtime resources.
+/neoforge-vfx/art/
+/forge-vfx/port-followup.txt
+
+# Credentials and local environment overrides.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+local.properties

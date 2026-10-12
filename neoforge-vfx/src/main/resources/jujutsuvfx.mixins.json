@@ -1,0 +1,42 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.jujutsuvfx.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ServerEntityTickMixin",
+    "FrozenPlayerMovementMixin",
+    "CursedFistDamageMixin",
+    "CursedFistKnockbackMixin",
+    "PurplePlayerMovementMixin",
+    "SkillBlockDropsMixin",
+    "SkillBlockLootMixin",
+    "SkillContainerDropsMixin",
+    "SkillHangingDropsMixin",
+    "SkillFurnaceExperienceMixin",
+    "SilentRopeBreakMixin",
+    "PurpleBreakEffectsMixin",
+    "CinematicSoundBroadcastMixin"
+  ],
+  "client": [
+    "HandLightTextureAccessor",
+    "ClientEntityTickMixin",
+    "FrozenEntityRenderMixin",
+    "CursedFistAttackMixin",
+    "PurpleHandReturnMixin",
+    "TechniqueHandEquipMixin",
+    "PurpleClientMovementMixin",
+    "IntegratedServerPurpleClockMixin",
+    "ShrineSilhouetteMixin",
+    "TechniqueHeldItemMixin",
+    "TechniquePlayerPoseMixin",
+    "CinematicCameraMixin",
+    "CinematicCameraShakeMixin",
+    "CinematicSoundListenerMixin",
+    "MartialModelMixin",
+    "MartialLimbMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

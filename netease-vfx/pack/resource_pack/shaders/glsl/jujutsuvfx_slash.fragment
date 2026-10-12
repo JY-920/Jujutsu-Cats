@@ -1,0 +1,82 @@
+// __multiversion__
+precision highp float;
+#include "fragmentVersionCentroidUV.h"
+#include "uniformWorldConstants.h"
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
+LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2;
+uniform vec4 EXTRA_VECTOR1; // centre / half length
+uniform vec4 EXTRA_VECTOR2; // direction in camera space / age seconds
+uniform vec4 EXTRA_VECTOR3; // aspect / tan / style / cross
+uniform vec4 EXTRA_VECTOR4; // seed / fade / duration / kind
+float h(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(h(vec3(i,0)),h(vec3(i+vec2(1,0),0)),f.x),mix(h(vec3(i+vec2(0,1),0)),h(vec3(i+1.0,0)),f.x),f.y);}
+float viewDepth(float d){return abs(PROJ[3][2]/max(.000001,abs(d*2.0-1.0+PROJ[2][2])));}
+float blade(vec2 p,float age,float seed){
+    float tip=mix(-1.1,1.2,smoothstep(0.0,.065,age));
+    float progress=smoothstep(-1.15,-.95,p.x)*(1.0-smoothstep(tip-.04,tip+.02,p.x));
+    float taper=pow(max(0.0,1.0-p.x*p.x),.55);
+    float rough=.004*sin(p.x*37.0+seed);
+    return (abs(p.y+rough)/max(.0001,taper))+(1.0-progress)*10.0;
+}
+void main(){
+    vec4 src=texture2D(TEXTURE_0,uv);vec3 c=EXTRA_VECTOR1.xyz;
+    float radius=max(.04,EXTRA_VECTOR1.w),fade=EXTRA_VECTOR4.y,age=EXTRA_VECTOR2.w;
+    if(c.z<=.02||fade<=0.0){gl_FragColor=src;return;}
+    vec2 screen=(uv*2.0-1.0)*vec2(EXTRA_VECTOR3.x,1.0)*EXTRA_VECTOR3.y;
+    vec2 q=(screen-c.xy/c.z)*c.z/radius;
+    float raw=texture2D(TEXTURE_2,uv).r,terrain=raw>.99999?100000.0:viewDepth(raw);
+    float visible=step(c.z-radius*.18,terrain+.2);
+    vec2 axis=EXTRA_VECTOR2.xy;axis=length(axis)>.001?normalize(axis):vec2(1,0);
+    vec2 p=vec2(dot(q,axis),dot(q,vec2(-axis.y,axis.x)));
+    float kind=EXTRA_VECTOR4.w,seed=EXTRA_VECTOR4.x;
+    vec3 fill=vec3(.025,.005,.015),edge=vec3(1.0,.1,.2),result=src.rgb;
+    float opacity=0.0,halo=0.0;
+    if(kind<.5){
+        float d=blade(p,age,seed);
+        if(EXTRA_VECTOR3.w>.5)d=min(d,blade(vec2(p.y,-p.x),max(0.0,age-.022),seed+3.0));
+        float style=EXTRA_VECTOR3.z;
+        if(style<.5){fill=vec3(.75,.005,.045);edge=vec3(1.0);}
+        else if(style<1.5){fill=vec3(.002);edge=vec3(1.0,.014,.045);}
+        else if(style<2.5){fill=vec3(1.0,.004,.03);edge=fill;}
+        else if(style<3.5){fill=vec3(1.0);edge=fill;}
+        else if(style<4.5){fill=vec3(0.0);edge=vec3(1.0);}
+        else {fill=vec3(1.0);edge=vec3(0.0);}
+        opacity=(1.0-smoothstep(.026,.034,d))*visible*fade;
+        vec3 color=mix(fill,edge,smoothstep(.015,.025,d));
+        halo=exp(-d*d*700.0)*.42*visible*fade;
+        vec2 warp=vec2(-axis.y,axis.x)*sin(p.x*24.0+seed)*exp(-d*d*900.0)*.0025*fade;
+        result=mix(texture2D(TEXTURE_0,clamp(uv+warp,vec2(.001),vec2(.999))).rgb,color,opacity)+edge*halo;
+    }else{
+        // Fractal ink fire expands from the contact point, then breaks into
+        // small differently sized round, lobed and elongated tongues.
+        float t=age*6.0,scale=.28+age*2.4;vec2 f=q/max(.2,scale);
+        float r=length(f),a=atan(f.y,f.x),frame=floor(age*24.0);
+        float ns=noise(f*4.0+vec2(seed*.01,frame*.71));
+        float lobes=.78+.19*sin(a*5.0+seed)+.16*sin(a*9.0-frame)+.16*ns;
+        float d=r-lobes;
+        float body=1.0-smoothstep(-.12,.03,d);
+        vec3 tint=kind>1.5?vec3(1.0,.004,.035):vec3(.01,.78,.94);
+        float ink=smoothstep(-.25,-.1,d);
+        vec3 color=mix(tint,vec3(.001,.008,.014),ink);
+        float rim=exp(-d*d*500.0);
+        result=mix(src.rgb,color,body*visible*fade)+tint*rim*.8*visible*fade;
+        for(int i=0;i<6;i++){
+            float fi=float(i),an=h(vec3(seed,fi,2))*6.283185;
+            float speed=.7+h(vec3(seed,fi,4))*1.4;
+            vec2 at=vec2(cos(an),sin(an))*(.5+age*speed*3.0);
+            float sz=.06+h(vec3(fi,seed,5))*.16;
+            vec2 v=(q-at)/sz;v.y/=.65+h(vec3(fi,3,seed))*1.5;
+            float drop=length(v)-(.8+.18*sin(atan(v.y,v.x)*(3.0+mod(fi,3.0))+frame));
+            result=mix(result,mix(tint,vec3(.004),smoothstep(-.4,-.1,drop)),(1.0-smoothstep(-.08,.05,drop))*fade*visible);
+        }
+        if(kind>1.5){
+            for(int i=0;i<4;i++){
+                float an=h(vec3(seed,float(i),floor(age*12.0)))*6.283185;
+                float da=abs(atan(sin(a-an),cos(a-an))+sin(r*18.0+seed)*.07);
+                float span=smoothstep(.2,.6,r)*(1.0-smoothstep(1.6,2.8,r));
+                result+=(vec3(.75,0,.015)*exp(-da*da*250.0)+vec3(1.0,.24,.3)*exp(-da*da*4500.0))*span*fade*visible;
+            }
+        }
+    }
+    gl_FragColor=vec4(clamp(result,0.0,1.0),src.a);
+}

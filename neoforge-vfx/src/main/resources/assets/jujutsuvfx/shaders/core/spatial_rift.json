@@ -1,0 +1,182 @@
+{
+  "vertex": "jujutsuvfx:spatial_rift",
+  "fragment": "jujutsuvfx:spatial_rift",
+  "samplers": [
+    {
+      "name": "SceneColor"
+    },
+    {
+      "name": "SceneDepth"
+    }
+  ],
+  "attributes": [
+    "Position",
+    "UV0",
+    "Color"
+  ],
+  "uniforms": [
+    {
+      "name": "DomainCenter",
+      "type": "float",
+      "count": 3,
+      "values": [0, 0, 0]
+    },
+    {
+      "name": "DomainRadius",
+      "type": "float",
+      "count": 1,
+      "values": [0]
+    },
+    {
+      "name": "RiftView",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "RiftProjection",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Viewport",
+      "type": "float",
+      "count": 2,
+      "values": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "EyeLocal",
+      "type": "float",
+      "count": 3,
+      "values": [
+        0,
+        0,
+        6
+      ]
+    },
+    {
+      "name": "HalfSize",
+      "type": "float",
+      "count": 2,
+      "values": [
+        0.6,
+        3.5
+      ]
+    },
+    {
+      "name": "FaceZ",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0.1
+      ]
+    },
+    {
+      "name": "Time",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "Seed",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "Opening",
+      "type": "float",
+      "count": 1,
+      "values": [
+        1
+      ]
+    },
+    {
+      "name": "Surface",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "UseScene",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "Strike",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "Impact",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "CutProgress",
+      "type": "float",
+      "count": 1,
+      "values": [
+        1
+      ]
+    }
+  ],
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha"
+  }
+}

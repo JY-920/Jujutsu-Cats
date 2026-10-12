@@ -1,0 +1,100 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+}
+version = '0.102.5-forge-1.20.1'
+group = 'dev.jujutsuvfx'
+base { archivesName = 'jujutsu-vfx' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+minecraft { mappings channel: 'official', version: '1.20.1' }
+repositories { mavenCentral() }
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.20'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5'
+    annotationProcessor 'com.google.code.gson:gson:2.10.1'
+    annotationProcessor 'com.google.guava:guava:31.1-jre'
+    annotationProcessor 'org.ow2.asm:asm-tree:9.5'
+    annotationProcessor 'org.ow2.asm:asm-util:9.5'
+    annotationProcessor 'org.ow2.asm:asm-commons:9.5'
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xmaxerrs','1000']
+}
+def mixinResources = layout.buildDirectory.dir('generated/mixinResources')
+sourceSets.main.resources.srcDir(mixinResources)
+tasks.register('createMixinSrg') {
+    dependsOn 'createMcpToSrg'
+    inputs.file('build/createMcpToSrg/output.tsrg')
+    outputs.file('build/mixin/mcp-to-srg.srg')
+    doLast {
+        file('build/mixin').mkdirs()
+        net.minecraftforge.srgutils.IMappingFile.load(file('build/createMcpToSrg/output.tsrg'))
+                .write(file('build/mixin/mcp-to-srg.srg').toPath(), net.minecraftforge.srgutils.IMappingFile.Format.SRG, false)
+    }
+}
+tasks.named('compileJava') {
+    dependsOn 'createMixinSrg'
+    doFirst { mixinResources.get().asFile.mkdirs() }
+    options.compilerArgs += [
+            '-AreobfSrgFile=' + file('build/mixin/mcp-to-srg.srg'),
+            '-AoutSrgFile=' + file('build/mixin/extra.srg'),
+            '-AoutRefMapFile=' + file('build/generated/mixinResources/jujutsuvfx.refmap.json')]
+}
+tasks.named('processResources') { dependsOn 'compileJava' }
+tasks.withType(net.minecraftforge.gradle.userdev.tasks.RenameJarInPlace).configureEach {
+    extraMappings.from(file('build/mixin/extra.srg'))
+}
+jar {
+    manifest { attributes 'MixinConfigs': 'jujutsuvfx.mixins.json' }
+    finalizedBy 'reobfJar'
+}
+
+tasks.register("verifyPlayfulCloud", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.PlayfulCloudTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyPlayfulCloud") }
+
+tasks.register("verifyMartialArts", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.MartialArtsTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyMartialArts") }
+
+tasks.register("verifyDamageScaling", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.DamageScalingTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDamageScaling") }
+
+tasks.register("verifyDamageSettings", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.network.DamageSettingsPayloadTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDamageSettings") }
+
+tasks.register("verifyDamagePreview", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.TechniqueDamagePreviewTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDamagePreview") }
+
+ tasks.register("verifyDomainDuration", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.DomainDurationTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDomainDuration") }
+
+tasks.register("verifyDomainSettings", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.network.DomainSettingsPayloadTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDomainSettings") }

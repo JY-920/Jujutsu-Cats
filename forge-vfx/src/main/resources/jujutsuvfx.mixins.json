@@ -1,0 +1,48 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.jujutsuvfx.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ServerEntityTickMixin",
+    "FrozenPlayerMovementMixin",
+    "CursedFistDamageMixin",
+    "CursedFistKnockbackMixin",
+    "PurplePlayerMovementMixin",
+    "SkillBlockDropsMixin",
+    "SkillBlockLootMixin",
+    "SkillContainerDropsMixin",
+    "SkillHangingDropsMixin",
+    "SkillFurnaceExperienceMixin",
+    "PurpleBreakEffectsMixin",
+    "PlayerTechniqueDamageMixin",
+    "MobLeashAccessor",
+    "TerrainExplosionAccessor",
+    "BlueDamageKnockbackMixin",
+    "CinematicSoundBroadcastMixin"
+  ],
+  "client": [
+    "EffectBlendModeAccessor",
+    "HandLightTextureAccessor",
+    "ClientEntityTickMixin",
+    "FrozenEntityRenderMixin",
+    "CursedFistAttackMixin",
+    "PurpleHandReturnMixin",
+    "TechniqueHandEquipMixin",
+    "PurpleClientMovementMixin",
+    "IntegratedServerPurpleClockMixin",
+    "ShrineSilhouetteMixin",
+    "TechniqueHeldItemMixin",
+    "TechniquePlayerPoseMixin",
+    "ClientConnectionAccessor",
+    "CinematicCameraMixin",
+    "CinematicCameraShakeMixin",
+    "CinematicSoundListenerMixin",
+    "MartialModelMixin",
+    "MartialLimbMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "jujutsuvfx.refmap.json"
+}

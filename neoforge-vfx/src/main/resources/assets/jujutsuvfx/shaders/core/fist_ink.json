@@ -1,0 +1,19 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha",
+    "srcalpha": "1",
+    "dstalpha": "1-srcalpha"
+  },
+  "vertex": "jujutsuvfx:fist_ink",
+  "fragment": "jujutsuvfx:fist_ink",
+  "attributes": ["Position", "UV0", "Color"],
+  "samplers": [],
+  "uniforms": [
+    {"name": "Time", "type": "float", "count": 1, "values": [0]},
+    {"name": "Hand", "type": "float", "count": 1, "values": [0]},
+    {"name": "CoreHalf", "type": "float", "count": 2, "values": [0.44, 0.55]},
+    {"name": "Bend", "type": "float", "count": 2, "values": [0, 0]}
+  ]
+}

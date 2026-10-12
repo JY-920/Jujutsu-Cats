@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:infinity"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:infinity",
+      "netease:show_in_hand": {
+        "value": false
+      }
+    }
+  }
+}

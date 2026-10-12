@@ -1,0 +1,54 @@
+{
+  "vertex": "jujutsuvfx:domain_sky",
+  "fragment": "jujutsuvfx:technique_light_composite",
+  "attributes": [
+    "Position",
+    "UV0",
+    "Color"
+  ],
+  "samplers": [
+    {
+      "name": "SceneColor"
+    },
+    {
+      "name": "SceneDepth"
+    },
+    {
+      "name": "LightLayer"
+    }
+  ],
+  "uniforms": [
+    {
+      "name": "InverseViewProjection",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "LightSize",
+      "type": "float",
+      "count": 2,
+      "values": [
+        960,
+        540
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:dismantle"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:dismantle",
+      "netease:show_in_hand": {
+        "value": false
+      }
+    }
+  }
+}

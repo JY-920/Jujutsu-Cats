@@ -1,0 +1,21 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+[[mods]]
+modId="jujutsuvfx"
+version="0.102.5"
+displayName="咒术映界 · Jujutsu Realms"
+authors="VFX Workshop"
+description="渲染术式、领域对抗与咒术猫咪。Forge 1.20.1 版本的捌切割普通方块。"
+[[dependencies.jujutsuvfx]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.20,48)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.jujutsuvfx]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"

@@ -1,0 +1,108 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.143'
+}
+version = '0.102.5-neoforge-1.21.1'
+group = 'dev.jujutsuvfx'
+base { archivesName = 'jujutsu-vfx' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// Compile against the exact installed physics API; never embed the physics engine in our mod.
+// Override with -PsableJar=/absolute/path/to/sable-neoforge-1.21.1-2.0.3.jar on another machine.
+def sableRuntimeJar = providers.gradleProperty('sableJar')
+        .orElse('D:/PCL2/PCL/.minecraft/versions/1.21.1-NeoForge模组开发/mods/sable-neoforge-1.21.1-2.0.3.jar')
+        .map { file(it) }
+def companionJar = layout.buildDirectory.file('compat-api/sable-companion-common-1.21.1-1.6.0.jar')
+def prepareSableApi = tasks.register('prepareSableApi', Copy) {
+    from({ zipTree(sableRuntimeJar.get()) }) {
+        include 'META-INF/jarjar/sable-companion-common-1.21.1-1.6.0.jar'
+        eachFile { path = name }
+        includeEmptyDirs = false
+    }
+    into layout.buildDirectory.dir('compat-api')
+}
+dependencies {
+    compileOnly files(sableRuntimeJar)
+    compileOnly files(companionJar).builtBy(prepareSableApi)
+}
+neoForge {
+    enable {
+        version = '21.1.248'
+        disableRecompilation = true
+    }
+    runs {
+        client {
+            client()
+            programArguments.addAll '--username', 'VfxTest'
+        }
+    }
+    mods { jujutsuvfx { sourceSet(sourceSets.main) } }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
+sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
+tasks.register('verifyRiftMath', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.jujutsuvfx.core.RiftShapeTest'
+}
+tasks.named('check') { dependsOn 'verifyRiftMath', 'verifyPurpleCharge', 'verifyEffectClock' }
+tasks.register('verifyPurpleCharge', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.jujutsuvfx.core.PurpleChargeTest'
+}
+tasks.register('verifyEffectClock', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'dev.jujutsuvfx.core.EffectClockTest'
+}
+
+tasks.register("verifyPlayfulCloud", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.PlayfulCloudTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyPlayfulCloud") }
+
+tasks.register("verifyMartialArts", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.MartialArtsTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyMartialArts") }
+
+tasks.register("verifyDamageScaling", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.DamageScalingTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDamageScaling") }
+
+tasks.register("verifyDamageSettings", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.network.DamageSettingsPayloadTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDamageSettings") }
+
+tasks.register("verifyDamagePreview", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.TechniqueDamagePreviewTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDamagePreview") }
+
+ tasks.register("verifyDomainDuration", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.DomainDurationTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDomainDuration") }
+
+tasks.register("verifyDomainSettings", JavaExec) {
+    dependsOn tasks.testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.network.DomainSettingsPayloadTest"
+}
+tasks.named("check") { dependsOn tasks.named("verifyDomainSettings") }

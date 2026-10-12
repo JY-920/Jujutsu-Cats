@@ -1,0 +1,70 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.player.first_person.empty_hand": {
+      "loop": true,
+      "bones": {
+        "rightarm": {
+          "position": [
+            "13.5-4.0*query.mod.jujutsuvfx_hand_charge",
+            "-10.0+2.5*query.mod.jujutsuvfx_hand_charge",
+            "12.0-4.5*query.mod.jujutsuvfx_hand_charge-2.0*query.mod.jujutsuvfx_hand_release"
+          ],
+          "rotation": [
+            "95.0+20.0*query.mod.jujutsuvfx_hand_charge+10.0*query.mod.jujutsuvfx_hand_red",
+            "-45.0+20.0*query.mod.jujutsuvfx_hand_charge+8.0*query.mod.jujutsuvfx_hand_void+15.0*query.mod.jujutsuvfx_hand_fuga",
+            "115.0+30.0*query.mod.jujutsuvfx_hand_charge-35.0*query.mod.jujutsuvfx_hand_red-20.0*query.mod.jujutsuvfx_hand_slash"
+          ]
+        },
+        "leftarm": {
+          "position": [
+            "-14.5*query.mod.jujutsuvfx_hand_active",
+            "(-17.0+8.0*query.mod.jujutsuvfx_hand_both)*query.mod.jujutsuvfx_hand_active",
+            "8.0*query.mod.jujutsuvfx_hand_active"
+          ],
+          "rotation": [
+            "55.0*query.mod.jujutsuvfx_hand_active+15.0*query.mod.jujutsuvfx_hand_void",
+            "-20.0*query.mod.jujutsuvfx_hand_active",
+            "-155.0*query.mod.jujutsuvfx_hand_active"
+          ],
+          "scale": "query.mod.jujutsuvfx_hand_active > 0.01 ? query.mod.jujutsuvfx_hand_both : 1.0"
+        },
+        "rightitem": {
+          "position": [
+            0,
+            "q.get_default_bone_pivot('rightarm',1) - q.get_default_bone_pivot('rightitem',1) - 7.0",
+            "-q.get_default_bone_pivot('rightitem',2)"
+          ]
+        },
+        "leftitem": {
+          "position": [
+            0,
+            "q.get_default_bone_pivot('leftarm',1) - q.get_default_bone_pivot('leftitem',1) - 7.0",
+            "-q.get_default_bone_pivot('leftitem',2)"
+          ]
+        }
+      }
+    },
+    "animation.jujutsuvfx.hands.third_person": {
+      "loop": true,
+      "override_previous_animation": true,
+      "blend_weight": "math.clamp(query.mod.jujutsuvfx_hand_charge+query.mod.jujutsuvfx_hand_release,0,1)",
+      "bones": {
+        "rightarm": {
+          "rotation": [
+            "-78.0*query.mod.jujutsuvfx_hand_charge-100.0*query.mod.jujutsuvfx_hand_release",
+            "-14.0*query.mod.jujutsuvfx_hand_charge",
+            "12.0*query.mod.jujutsuvfx_hand_charge"
+          ]
+        },
+        "leftarm": {
+          "rotation": [
+            "-75.0*query.mod.jujutsuvfx_hand_both",
+            "26.0*query.mod.jujutsuvfx_hand_both",
+            "-18.0*query.mod.jujutsuvfx_hand_both"
+          ]
+        }
+      }
+    }
+  }
+}

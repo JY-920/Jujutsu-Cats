@@ -1,0 +1,11 @@
+{
+  "blend":{"func":"add","srcrgb":"srcalpha","dstrgb":"1","srcalpha":"0","dstalpha":"1"},
+  "vertex":"jujutsuvfx:mahoraga_blade",
+  "fragment":"jujutsuvfx:mahoraga_blade",
+  "attributes":["Position","UV0","Color"],
+  "samplers":[],
+  "uniforms":[
+    {"name":"ViewProjection","type":"matrix4x4","count":16,"values":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]},
+    {"name":"Time","type":"float","count":1,"values":[0]}
+  ]
+}

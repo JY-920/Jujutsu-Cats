@@ -1,0 +1,39 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "咒术映界 · 网易验证版 行为",
+    "description": "五条猫与全术式 · 原生 GLSL 特效 · ModSDK 3.9",
+    "uuid": "db4ea911-5788-5f54-8d06-3698f59df696",
+    "version": [
+      0,
+      2,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      18,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "7bd89a16-25de-5106-9fa9-f4dd935a0e3d",
+      "version": [
+        0,
+        2,
+        1
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "e49906fb-582a-5330-a111-1df3eafcde84",
+      "version": [
+        0,
+        2,
+        1
+      ]
+    }
+  ]
+}

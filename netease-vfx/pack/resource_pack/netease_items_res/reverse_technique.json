@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:reverse_technique"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:reverse_technique",
+      "netease:show_in_hand": {
+        "value": false
+      }
+    }
+  }
+}

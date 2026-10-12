@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:red"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:red",
+      "netease:show_in_hand": {
+        "value": false
+      }
+    }
+  }
+}

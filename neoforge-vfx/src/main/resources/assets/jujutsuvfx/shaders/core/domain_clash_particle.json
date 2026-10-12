@@ -1,0 +1,6 @@
+{
+  "blend":{"func":"add","srcrgb":"srcalpha","dstrgb":"1"},
+  "vertex":"jujutsuvfx:domain_clash_particle","fragment":"jujutsuvfx:domain_clash_particle",
+  "attributes":["Position","UV0","Color"],"samplers":[],
+  "uniforms":[{"name":"ViewProjection","type":"matrix4x4","count":16,"values":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]}]
+}

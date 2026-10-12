@@ -1,0 +1,288 @@
+{
+  "meta": {
+    "format_version": "4.10",
+    "model_format": "java_block",
+    "box_uv": false
+  },
+  "name": "end_portal_frame_filled",
+  "model_identifier": "end_portal_frame_filled",
+  "parent": "",
+  "ambientocclusion": true,
+  "front_gui_light": false,
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "name": "frame",
+      "type": "cube",
+      "uuid": "5176c3aa-b88c-4902-bdeb-c8453cbb2525",
+      "box_uv": false,
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        13,
+        16
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "autouv": 0,
+      "color": 0,
+      "visibility": true,
+      "export": true,
+      "shade": true,
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "texture": 2,
+          "cullface": "north"
+        },
+        "east": {
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "texture": 2,
+          "cullface": "east"
+        },
+        "south": {
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "texture": 2,
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            3,
+            16,
+            16
+          ],
+          "texture": 2,
+          "cullface": "west"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 0,
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "name": "eye",
+      "type": "cube",
+      "uuid": "074151f7-e20b-465e-a0f3-72f21f3ffe62",
+      "box_uv": false,
+      "from": [
+        4,
+        13,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "autouv": 0,
+      "color": 1,
+      "visibility": true,
+      "export": true,
+      "shade": true,
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            0,
+            12,
+            3
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            12,
+            3
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            12,
+            3
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            12,
+            3
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": 3,
+          "cullface": "up"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        }
+      }
+    }
+  ],
+  "outliner": [
+    "5176c3aa-b88c-4902-bdeb-c8453cbb2525",
+    "074151f7-e20b-465e-a0f3-72f21f3ffe62"
+  ],
+  "textures": [
+    {
+      "uuid": "4e124ce9-1f03-454d-aa20-28ecef937023",
+      "name": "end_stone.png",
+      "id": "bottom",
+      "path": "",
+      "relative_path": "",
+      "folder": "block",
+      "namespace": "minecraft",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": true,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1UlEQVQ4T32SIRLCUAxEc/9ajsARsODAITEIJBJZgSmTzrzO61IQf9rkb5Ldza/Hcz/d7rv59P9rPMzH8fk0TNfLsOA6R1xZzAWNOibHMLD9rZzqady5YTYpF/xrApPxfVyxK2vj0nQBdlPjOu4ze9AAJmUT+2LcykRrtRzT/bWlIoFuu04TDwBHXA1AW5pHrv/Th2ULXk86v7Uhmz5LSFp2HyDgrVdbpkWhtScb55YtUJjbSIPtDY2KQr8DNgE7FyXL8iQ2witL/TYc3NdLdJG/9sCyPqRTV/aJ4BsfAAAAAElFTkSuQmCC"
+    },
+    {
+      "uuid": "a8a8c2dc-afa5-4636-8113-f508b75cbf89",
+      "name": "end_portal_frame_top.png",
+      "id": "top",
+      "path": "",
+      "relative_path": "",
+      "folder": "block",
+      "namespace": "minecraft",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": true,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVQ4y2NwKk7/TwlmABEzj03+r+JsDccg/tb1lWC2foTf/wOH2rGqgRsAEgDRIIUgjSA2TOOTZ2vgtoHkQGIweRQDQJJvP+0Ea4AZAlMIwiAxkBxIDYiN1QCYbTBNMC/AnA1iwyzAMADkNJDpIDazEB9WDFILUgNSi2IAKEBgBoAkQIrZJEUwMEgOZgBKIMICjJABOF2AzQskGUCsF5ANwOkFslyAHI0wCRiNjPFGI7aEBEsPRCUkbEkZpAGWdPEmZVCAINsGC1Rk27GpgRtACQYADsY0OgwN300AAAAASUVORK5CYII="
+    },
+    {
+      "uuid": "c436e7cf-32d9-4aa3-a4de-5b1d57113103",
+      "name": "end_portal_frame_side.png",
+      "id": "side",
+      "path": "",
+      "relative_path": "",
+      "folder": "block",
+      "namespace": "minecraft",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": true,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA3UlEQVQ4y9VRKw7CUBDcO2A4BSiCQ/QAaBySA5BwBAySGjyCBIvAgKMOialAIpEVmCXTZF6GTUOaoGgyfZ/dmd3ZZ/b/Xzaf+S+w/mTsm2Lt3cHIO71hKyAXHHBrAZL3y6kfd4uvQA5FkgAuELycVwnX4hMaQ24SYHWsSLyVuT+rg98fW69ep3rFHYWwh3dyDGrqDapN0MFp18aW2g6QoGVDS4R6bALjyjF4hGcCZ/pWxJkkAZDikCgUybEI7gy/+GxajXs+JQtQKHVAEa2KWHzKmGdUU2Jc1RI7ZOwNvQEyKKxM2nsAAAAASUVORK5CYII="
+    },
+    {
+      "uuid": "7d94f537-63e3-4489-a08f-0e88bfb86729",
+      "name": "end_portal_frame_eye.png",
+      "id": "eye",
+      "path": "",
+      "relative_path": "",
+      "folder": "block",
+      "namespace": "minecraft",
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "visible": true,
+      "mode": "bitmap",
+      "internal": true,
+      "saved": true,
+      "render_mode": "default",
+      "render_sides": "auto",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAfklEQVQ4y2NgQAcyCv8lTCzBWDM0CIxhfJAcA0EAUoRkCIpmUgzAieliAEVhAFMc1Jj13zLVC4xBbLghxBgAsnXLpS1gjVaR9v+zlhbDXULQAJBCkK0zj03+L60tAMbNu4rBYiA5og0AaSLLAJgXQM4GOZ9kL1AciJQn5ZEHAJvwnqYFC7uNAAAAAElFTkSuQmCC"
+    }
+  ]
+}

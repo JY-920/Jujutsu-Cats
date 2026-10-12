@@ -1,0 +1,22 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.jujutsuvfx.blindfold": {
+      "initial_state": "covered",
+      "states": {
+        "covered": {
+          "transitions": [
+            {
+              "uncovered": "query.mod.jujutsuvfx_uncovered > 0.5"
+            }
+          ]
+        },
+        "uncovered": {
+          "animations": [
+            "blindfold"
+          ]
+        }
+      }
+    }
+  }
+}

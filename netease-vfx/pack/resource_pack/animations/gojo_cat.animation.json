@@ -1,0 +1,146 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.jujutsuvfx.blindfold": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 1.5,
+      "bones": {
+        "mesh": {
+          "rotation": {
+            "0": [
+              -0.0,
+              -0.0,
+              0.0
+            ],
+            "1.25": [
+              -0.0,
+              -0.0,
+              -13.25
+            ]
+          },
+          "position": {
+            "0": [
+              -0.0,
+              0.0,
+              0.0
+            ],
+            "1.25": [
+              -0.0,
+              -0.025,
+              0.0
+            ]
+          },
+          "scale": {
+            "0": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "1.25": [
+              1.0,
+              0.445,
+              1.0
+            ]
+          }
+        }
+      }
+    },
+    "animation.jujutsuvfx.walk": {
+      "loop": true,
+      "bones": {
+        "left_front_leg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17 + 0) * 28 * math.min(query.modified_move_speed, 1)",
+            0,
+            0
+          ]
+        },
+        "right_front_leg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17 + 180) * 28 * math.min(query.modified_move_speed, 1)",
+            0,
+            0
+          ]
+        },
+        "left_hind_leg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17 + 180) * 28 * math.min(query.modified_move_speed, 1)",
+            0,
+            0
+          ]
+        },
+        "right_hind_leg": {
+          "rotation": [
+            "math.cos(query.modified_distance_moved * 38.17 + 0) * 28 * math.min(query.modified_move_speed, 1)",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.jujutsuvfx.idle": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            "math.clamp(query.target_x_rotation, -25, 25)",
+            "math.clamp(query.target_y_rotation, -45, 45)",
+            0
+          ]
+        },
+        "tail1": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 100) * 5",
+            0
+          ]
+        },
+        "tail2": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 100 - 30) * 8",
+            0
+          ]
+        }
+      }
+    },
+    "animation.jujutsuvfx.cast": {
+      "loop": true,
+      "bones": {
+        "group2": {
+          "rotation": [
+            "-48 * query.mod.jujutsuvfx_cast",
+            0,
+            0
+          ],
+          "position": [
+            0,
+            "2 * query.mod.jujutsuvfx_cast",
+            0
+          ]
+        },
+        "left_front_leg": {
+          "rotation": [
+            "-62 * query.mod.jujutsuvfx_cast",
+            0,
+            "-18 * query.mod.jujutsuvfx_cast"
+          ]
+        },
+        "right_front_leg": {
+          "rotation": [
+            "-68 * query.mod.jujutsuvfx_cast",
+            0,
+            "18 * query.mod.jujutsuvfx_cast"
+          ]
+        },
+        "head": {
+          "rotation": [
+            "38 * query.mod.jujutsuvfx_cast",
+            0,
+            0
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:malevolent_shrine"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:malevolent_shrine",
+      "netease:show_in_hand": {
+        "value": false
+      }
+    }
+  }
+}

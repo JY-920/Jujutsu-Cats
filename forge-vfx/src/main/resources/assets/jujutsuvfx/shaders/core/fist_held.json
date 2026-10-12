@@ -1,0 +1,26 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha",
+    "srcalpha": "1",
+    "dstalpha": "1-srcalpha"
+  },
+  "vertex": "jujutsuvfx:fist_ink",
+  "fragment": "jujutsuvfx:fist_held",
+  "attributes": ["Position", "UV0", "Color"],
+  "samplers": [],
+  "uniforms": [
+    {"name": "Time", "type": "float", "count": 1, "values": [0]},
+    {"name": "Power", "type": "float", "count": 1, "values": [1]},
+    {"name": "Seed", "type": "float", "count": 1, "values": [0]},
+    {"name": "Charged", "type": "float", "count": 1, "values": [0]},
+    {"name": "Bend", "type": "float", "count": 2, "values": [0, 0]},
+    {"name": "CoreHalf", "type": "float", "count": 2, "values": [0.48, 0.30]},
+    {"name": "FlameUp", "type": "float", "count": 2, "values": [0, 1]},
+    {"name": "CanvasHalf", "type": "float", "count": 2, "values": [1, 1.2]},
+    {"name": "FlameAspect", "type": "float", "count": 1, "values": [1.2]},
+    {"name": "FlamePose", "type": "float", "count": 4, "values": [0, 0, 0, 0]},
+    {"name": "FlameFlicker", "type": "float", "count": 4, "values": [0, 0, 0, 0]}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "blend": {"func": "add", "srcrgb": "1", "dstrgb": "1-srcalpha"},
+  "vertex": "jujutsuvfx:cat_technique",
+  "fragment": "jujutsuvfx:cat_technique",
+  "attributes": ["Position", "UV0", "Color"],
+  "samplers": [],
+  "uniforms": [
+    {"name": "Time", "type": "float", "count": 1, "values": [0]},
+    {"name": "Age", "type": "float", "count": 1, "values": [0]},
+    {"name": "Seed", "type": "float", "count": 1, "values": [0]},
+    {"name": "Power", "type": "float", "count": 1, "values": [1]},
+    {"name": "Kind", "type": "float", "count": 1, "values": [0]},
+    {"name": "Pass", "type": "float", "count": 1, "values": [0]}
+  ]
+}

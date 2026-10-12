@@ -1,0 +1,123 @@
+// __multiversion__
+precision highp float;
+#include "fragmentVersionCentroidUV.h"
+#include "uniformWorldConstants.h"
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
+LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2;
+uniform vec4 EXTRA_VECTOR1; // camera-space centre, radius
+uniform vec4 EXTRA_VECTOR2; // time, kind, phase age, opacity
+uniform vec4 EXTRA_VECTOR3; // aspect, tan half fov, charge, flash
+uniform vec4 EXTRA_VECTOR4; // camera-space direction, extra
+float h3(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+float n3(vec3 p){vec3 a=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+return mix(mix(mix(h3(a),h3(a+vec3(1,0,0)),f.x),mix(h3(a+vec3(0,1,0)),h3(a+vec3(1,1,0)),f.x),f.y),
+mix(mix(h3(a+vec3(0,0,1)),h3(a+vec3(1,0,1)),f.x),mix(h3(a+vec3(0,1,1)),h3(a+vec3(1,1,1)),f.x),f.y),f.z);}
+float fb(vec3 p){return .55*n3(p)+.28*n3(p*2.07)+.17*n3(p*4.19);}
+mat2 rot(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
+float dep(float d){return abs(PROJ[3][2]/max(.000001,abs(d*2.0-1.0+PROJ[2][2])));}
+float sphere(vec3 rd,vec3 c,float r){float v=dot(rd,c),h=v*v-dot(c,c)+r*r;return h>0.0&&v>0.0?max(0.0,v-sqrt(h)):1000000.0;}
+void main(){
+    vec4 src=texture2D(TEXTURE_0,uv);vec3 c=EXTRA_VECTOR1.xyz;
+    float radius=max(.02,EXTRA_VECTOR1.w),t=EXTRA_VECTOR2.x,kind=EXTRA_VECTOR2.y,age=EXTRA_VECTOR2.z,fade=EXTRA_VECTOR2.w;
+    if(fade<=0.0){gl_FragColor=src;return;}
+    vec2 screen=(uv*2.0-1.0)*vec2(EXTRA_VECTOR3.x,1.0)*EXTRA_VECTOR3.y;
+    vec3 ray=normalize(vec3(screen,1.0));float raw=texture2D(TEXTURE_2,uv).r;
+    float terrain=raw>.99999?100000.0:dep(raw);
+    vec2 q=(screen-c.xy/max(c.z,.06))*max(c.z,.06)/radius;
+    float r=length(q),a=atan(q.y,q.x),alpha=0.0;
+    float entry=sphere(ray,c,radius*1.12),vis=step(entry*ray.z,terrain+.07);
+    float haze=exp(-r*r*1.7)*step(0.0,c.z)*step(c.z-radius,terrain+.08);
+    vec3 color=vec3(0.0),glow=vec3(0.0);
+    vec2 distortion=vec2(0.0);
+    if(kind<1.5){
+        // Blue's irregular white -> cyan -> ultramarine body. Only the flame
+        // silhouette is stepped; position and the vortex continue every frame.
+        vec2 flow=rot(t*1.5)*q;float frame=floor(t*24.0)/24.0;
+        float ns=fb(vec3(flow*4.6,frame*5.4));
+        float outline=1.0+.11*sin(a*5.0+t*3.0)+.13*(ns-.5);
+        float body=1.0-smoothstep(outline-.075,outline,r);
+        float core=1.0-smoothstep(.38+ns*.12,.58+ns*.17,r);
+        float cyan=1.0-smoothstep(.68+ns*.1,.94,r);
+        float scallop=sin(a*5.0+r*8.0-t*5.0+ns*5.0);
+        color=mix(vec3(.025,.02,.66),vec3(.015,.85,1.0),cyan);
+        color=mix(color,vec3(1.0,1.04,1.12),core);
+        color+=vec3(.0,.55,.82)*pow(max(0.0,scallop),4.0)*body*.7;
+        alpha=body*vis;
+        float tail=pow(max(0.0,1.0-abs(scallop)*4.0),2.0)*smoothstep(.8,1.0,r)*exp(-max(0.0,r-1.0)*3.0);
+        glow=vec3(.03,.3,1.0)*haze*.22+vec3(.0,.8,1.0)*tail*.6*step(c.z-radius,terrain);
+        distortion=(q/max(r,.1)*sin(r*12.0-t*7.0)+vec2(q.y,-q.x))*haze*.005;
+    }else if(kind<2.5){
+        // A compact matte red pearl. No white flash, rings or floating strips.
+        float grain=h3(vec3(floor(q*190.0),floor(t*24.0)));
+        float body=1.0-smoothstep(.92,1.0,r);
+        float cloud=fb(vec3(q*5.0,t*2.0));
+        float white=exp(-dot(q+vec2(.18,.12),q+vec2(.18,.12))*15.0)*(.6+.2*cloud);
+        color=mix(vec3(.45,.0,.025),vec3(1.0,.016,.08),sqrt(max(0.0,1.0-r*r)))*(.85+.25*grain);
+        color=mix(color,vec3(1.0,.86,.89),white);
+        alpha=body*vis;glow=vec3(.85,.008,.065)*haze*.24;
+        distortion=q*haze*.002;
+    }else if(kind<3.5){
+        vec3 axis=normalize(EXTRA_VECTOR4.xyz+vec3(0,0,.00001));
+        float d=dot(ray,axis),w=dot(ray,c),v=dot(axis,c),den=max(.0001,1.0-d*d);
+        float along=clamp((d*w-v)/den,0.0,32.0);
+        float rayT=max(0.0,dot(c+axis*along,ray));
+        float dist=length(ray*rayT-c-axis*along)/radius;
+        float stripe=fb(vec3(ray*rayT*.9-vec3(0,0,t*16.0)));
+        float body=1.0-smoothstep(.7+.2*stripe,1.08,dist);
+        float core=exp(-dist*dist*8.0);
+        color=mix(vec3(.93,.008,.05),vec3(1.0,.76,.78),core*.8);
+        color+=vec3(.85,.06,.08)*stripe*.2;
+        vis=step(rayT*ray.z,terrain+.15);alpha=body*vis;
+        glow=vec3(1.0,.015,.07)*exp(-dist*dist*2.0)*.35*vis;
+        distortion=screen*exp(-dist*dist)*.004;
+    }else if(kind<6.5){
+        float size=kind>5.5?1.0:0.65;
+        vec2 p=q;float sweep=fb(vec3(p.x*3.5,p.y*4.5-t*7.0,t*.6));
+        if(kind>4.5&&kind<5.5){
+            vec3 axis=normalize(EXTRA_VECTOR4.xyz+vec3(0,0,.00001));
+            vec2 dir=axis.xy;dir=length(dir)>.001?normalize(dir):vec2(0,1);
+            p=vec2(dot(q,vec2(dir.y,-dir.x)),dot(q,dir));p.y*=.35;
+        }
+        float shape=length(p*vec2(1.0,kind<5.5?.72:1.0));
+        float boundary=size+.25*sweep+.09*sin(a*7.0+t*4.0);
+        float body=1.0-smoothstep(boundary-.18,boundary+.025,shape);
+        float core=1.0-smoothstep(.15,.7,shape+sweep*.22);
+        color=mix(vec3(.63,.006,.0),vec3(1.0,.25,.005),body);
+        color=mix(color,vec3(1.0,.97,.65),core);
+        color+=vec3(.35,.08,.0)*smoothstep(.6,.85,sweep);
+        alpha=body*step(c.z-radius*1.25,terrain)*step(0.0,c.z);
+        glow=vec3(1.0,.16,.002)*haze*.7;
+        float sparks=pow(max(0.0,sin(a*23.0+r*11.0-t*10.0)),48.0)*exp(-abs(r-1.35)*5.0);
+        glow+=vec3(1.0,.57,.09)*sparks*step(c.z-radius,terrain);
+        distortion=vec2(sin(q.y*18.0+t*13.0),cos(q.x*16.0-t*8.0))*haze*.009;
+    }else{
+        vec2 p=rot(t*1.6)*q;float ns=fb(vec3(p*5.0,t*.9));
+        float spiral=.5+.5*sin(a*3.0+r*11.0-t*6.0+ns*5.0);
+        float dust=pow(h3(vec3(floor(p*310.0),floor(t*15.0))),85.0);
+        float galaxy=exp(-abs(p.y+sin(p.x*6.0)*.11)*15.0)*exp(-r*r*3.0);
+        color=mix(vec3(.1843,.1333,.7412),vec3(.65,.05,1.0),1.0-smoothstep(.5,1.0,r));
+        color+=vec3(.9,.35,1.0)*spiral*ns*.75+vec3(1.0,.8,1.0)*(galaxy*2.1+exp(-r*r*17.0)*2.2+dust*.7);
+        float body=1.0-smoothstep(.93+ns*.03,1.0,r);
+        alpha=body*vis;glow=vec3(.46,.04,.9)*haze*.3;
+        if(kind>7.5){
+            float shell=exp(-abs(r-.87)*20.0);
+            alpha*=.25+.65*shell;
+            glow+=vec3(.75,.3,1.0)*shell*1.4*step(c.z-radius,terrain);
+            float shock=exp(-abs(r-1.16)*45.0);
+            glow+=vec3(.9,.77,1.0)*shock*.8;
+            color+=vec3(.5)*exp(-age*8.0)*EXTRA_VECTOR3.w;
+        }
+        float pulse=1.0-smoothstep(.05,.28,fract(t*3.0));float seed=floor(t*3.0);
+        for(int i=0;i<3;i++){
+            float angle=h3(vec3(seed,float(i),4.0))*6.283185;
+            float delta=abs(atan(sin(a-angle),cos(a-angle))+sin(r*16.0+seed)*.045);
+            float span=smoothstep(.35,.8,r)*(1.0-smoothstep(1.5,2.4,r));
+            glow+=(vec3(.58,.07,1.0)*exp(-delta*delta*600.0)+vec3(1.2,.96,1.4)*exp(-delta*delta*6500.0))*span*pulse*step(c.z-radius,terrain);
+        }
+        distortion=(vec2(q.y,-q.x)+q*sin(r*15.0-t*8.0))*haze*.012;
+    }
+    // Outside pixels retain the preceding pass; no framebuffer clears or depth writes.
+    vec3 scene=texture2D(TEXTURE_0,clamp(uv+distortion*fade,vec2(.001),vec2(.999))).rgb;
+    vec3 result=mix(scene,color,clamp(alpha*fade,0.0,1.0))+glow*fade;
+    gl_FragColor=vec4(clamp(result,0.0,1.0),src.a);
+}

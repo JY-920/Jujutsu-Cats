@@ -1,0 +1,252 @@
+{
+  "purple_charge": {
+    "subtitle": "subtitles.jujutsuvfx.purple_charge",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:purple_charge",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "purple_release": {
+    "subtitle": "subtitles.jujutsuvfx.purple_release",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:purple_release",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "purple_flight": {
+    "subtitle": "subtitles.jujutsuvfx.purple_flight",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:purple_flight",
+        "preload": true,
+        "attenuation_distance": 192
+      }
+    ]
+  },
+  "purple_end": {
+    "subtitle": "subtitles.jujutsuvfx.purple_end",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:purple_end",
+        "attenuation_distance": 160
+      }
+    ]
+  },
+  "blue_form": {
+    "subtitle": "subtitles.jujutsuvfx.blue_form",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:blue_form",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "blue_loop": {
+    "subtitle": "subtitles.jujutsuvfx.blue_loop",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:blue_loop",
+        "preload": true,
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "blue_close": {
+    "subtitle": "subtitles.jujutsuvfx.blue_close",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:blue_close",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "red_charge": {
+    "subtitle": "subtitles.jujutsuvfx.red_charge",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:red_charge",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "red_release": {
+    "subtitle": "subtitles.jujutsuvfx.red_release",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:red_release",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "red_impact": {
+    "subtitle": "subtitles.jujutsuvfx.red_impact",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:red_impact",
+        "attenuation_distance": 72
+      }
+    ]
+  },
+  "furnace_charge": {
+    "subtitle": "subtitles.jujutsuvfx.furnace_charge",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:furnace_charge",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "furnace_release": {
+    "subtitle": "subtitles.jujutsuvfx.furnace_release",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:furnace_release",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "furnace_burst": {
+    "subtitle": "subtitles.jujutsuvfx.furnace_burst",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:furnace_burst",
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "void_air_friction": {
+    "subtitle": "subtitles.jujutsuvfx.void_air_friction",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:void_air_friction",
+        "preload": true
+      }
+    ]
+  },
+  "shrine_slash": {
+    "subtitle": "subtitles.jujutsuvfx.shrine_slash",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:shrine_slash_1",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "jujutsuvfx:shrine_slash_2",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "jujutsuvfx:shrine_slash_3",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "jujutsuvfx:shrine_slash_4",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "jujutsuvfx:shrine_slash_5",
+        "attenuation_distance": 32,
+        "weight": 2
+      }
+    ]
+  },
+  "shrine_impact": {
+    "subtitle": "subtitles.jujutsuvfx.shrine_impact",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:shrine_impact_1",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "jujutsuvfx:shrine_impact_2",
+        "attenuation_distance": 32
+      },
+      {
+        "name": "jujutsuvfx:shrine_impact_3",
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "shrine_finish": {
+    "subtitle": "subtitles.jujutsuvfx.shrine_finish",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:shrine_finish",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "red_air": {
+    "subtitle": "subtitles.jujutsuvfx.red_air",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:red_air",
+        "stream": false
+      }
+    ]
+  },
+  "red_cannon": {
+    "subtitle": "subtitles.jujutsuvfx.red_cannon",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:red_cannon",
+        "stream": false
+      }
+    ]
+  },
+  "red_roar": {
+    "subtitle": "subtitles.jujutsuvfx.red_roar",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:red_roar",
+        "stream": false
+      }
+    ]
+  },
+  "infinity_ding": {
+    "subtitle": "subtitles.jujutsuvfx.infinity_ding",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:infinity_ding",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "shrine_focus_open": {
+    "subtitle": "subtitles.jujutsuvfx.shrine_focus_open",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:shrine_focus_open",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "shrine_focus_cut": {
+    "subtitle": "subtitles.jujutsuvfx.shrine_focus_cut",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:shrine_focus_cut_1",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "jujutsuvfx:shrine_focus_cut_2",
+        "attenuation_distance": 48
+      },
+      {
+        "name": "jujutsuvfx:shrine_focus_cut_3",
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "cinematic_rain_love": {
+    "sounds": [
+      {
+        "name": "jujutsuvfx:music/rain_love",
+        "stream": true
+      }
+    ]
+  }
+}

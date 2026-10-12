@@ -1,0 +1,230 @@
+{
+  "format_version": "1.14.0",
+  "sound_definitions": {
+    "jujutsuvfx.blue_form": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/blue_form",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.blue_loop": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/blue_loop",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.blue_close": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/blue_close",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.red_air": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/red_air",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.red_release": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/red_release",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.red_cannon": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/red_cannon",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.red_impact": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/red_impact",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.purple_charge": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/purple_charge",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.purple_release": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/purple_release",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.purple_flight": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/purple_flight",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.purple_end": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/purple_end",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.furnace_charge": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/furnace_charge",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.furnace_release": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/furnace_release",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.furnace_burst": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/furnace_burst",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_finish": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_finish",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_focus_open": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_focus_open",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.void_air_friction": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/void_air_friction",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_slash_1": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_slash_1",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_slash_2": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_slash_2",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_slash_3": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_slash_3",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_slash_4": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_slash_4",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_slash_5": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_slash_5",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_focus_cut_1": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_focus_cut_1",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_focus_cut_2": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_focus_cut_2",
+          "stream": false
+        }
+      ]
+    },
+    "jujutsuvfx.shrine_focus_cut_3": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/jujutsuvfx/shrine_focus_cut_3",
+          "stream": false
+        }
+      ]
+    }
+  }
+}

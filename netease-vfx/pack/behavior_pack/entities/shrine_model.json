@@ -1,0 +1,59 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "jujutsuvfx:shrine_model",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "is_experimental": false
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "jujutsuvfx_visual"
+        ]
+      },
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": false
+      },
+      "minecraft:collision_box": {
+        "width": 0,
+        "height": 0
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "deals_damage": false
+          }
+        ]
+      },
+      "minecraft:timer": {
+        "looping": false,
+        "time": 120,
+        "time_down_event": {
+          "event": "expire",
+          "target": "self"
+        }
+      }
+    },
+    "component_groups": {
+      "expire": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "events": {
+      "expire": {
+        "add": {
+          "component_groups": [
+            "expire"
+          ]
+        }
+      }
+    }
+  }
+}

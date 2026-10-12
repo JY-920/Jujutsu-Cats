@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:unlimited_void"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:unlimited_void",
+      "netease:show_in_hand": {
+        "value": false
+      }
+    }
+  }
+}

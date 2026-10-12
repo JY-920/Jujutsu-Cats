@@ -1,0 +1,38 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.jujutsuvfx.gojo_body": {
+      "geometry": "Geometry.body",
+      "materials": [
+        {
+          "*": "Material.body"
+        }
+      ],
+      "textures": [
+        "Texture.body"
+      ]
+    },
+    "controller.render.jujutsuvfx.gojo_details": {
+      "geometry": "Geometry.details",
+      "materials": [
+        {
+          "*": "Material.details"
+        }
+      ],
+      "textures": [
+        "Texture.details"
+      ]
+    },
+    "controller.render.jujutsuvfx.gojo_eyes": {
+      "geometry": "Geometry.eyes",
+      "materials": [
+        {
+          "*": "Material.eyes"
+        }
+      ],
+      "textures": [
+        "Texture.eyes"
+      ]
+    }
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "jujutsuvfx_purple": {
+    "vertexShader": "shaders/jujutsuvfx_fullscreen.vertex",
+    "fragmentShader": "shaders/jujutsuvfx_purple.fragment",
+    "vertexFields": [
+      {
+        "field": "Position"
+      },
+      {
+        "field": "UV0"
+      }
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point",
+        "textureWrap": "Clamp"
+      }
+    ],
+    "states": [
+      "DisableDepthTest"
+    ],
+    "msaaSupport": "Both"
+  },
+  "jujutsuvfx_void": {
+    "vertexShader": "shaders/jujutsuvfx_fullscreen.vertex",
+    "fragmentShader": "shaders/jujutsuvfx_void.fragment",
+    "vertexFields": [
+      {
+        "field": "Position"
+      },
+      {
+        "field": "UV0"
+      }
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point",
+        "textureWrap": "Clamp"
+      }
+    ],
+    "states": [
+      "DisableDepthTest"
+    ],
+    "msaaSupport": "Both"
+  },
+  "jujutsuvfx_technique": {
+    "vertexShader": "shaders/jujutsuvfx_fullscreen.vertex",
+    "fragmentShader": "shaders/jujutsuvfx_technique.fragment",
+    "vertexFields": [
+      {
+        "field": "Position"
+      },
+      {
+        "field": "UV0"
+      }
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point",
+        "textureWrap": "Clamp"
+      }
+    ],
+    "states": [
+      "DisableDepthTest"
+    ],
+    "msaaSupport": "Both"
+  },
+  "jujutsuvfx_shrine": {
+    "vertexShader": "shaders/jujutsuvfx_fullscreen.vertex",
+    "fragmentShader": "shaders/jujutsuvfx_shrine.fragment",
+    "vertexFields": [
+      {
+        "field": "Position"
+      },
+      {
+        "field": "UV0"
+      }
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point",
+        "textureWrap": "Clamp"
+      }
+    ],
+    "states": [
+      "DisableDepthTest"
+    ],
+    "msaaSupport": "Both"
+  },
+  "jujutsuvfx_slash": {
+    "vertexShader": "shaders/jujutsuvfx_fullscreen.vertex",
+    "fragmentShader": "shaders/jujutsuvfx_slash.fragment",
+    "vertexFields": [
+      {
+        "field": "Position"
+      },
+      {
+        "field": "UV0"
+      }
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point",
+        "textureWrap": "Clamp"
+      }
+    ],
+    "states": [
+      "DisableDepthTest"
+    ],
+    "msaaSupport": "Both"
+  },
+  "jujutsuvfx_aura": {
+    "vertexShader": "shaders/jujutsuvfx_fullscreen.vertex",
+    "fragmentShader": "shaders/jujutsuvfx_aura.fragment",
+    "vertexFields": [
+      {
+        "field": "Position"
+      },
+      {
+        "field": "UV0"
+      }
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear",
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point",
+        "textureWrap": "Clamp"
+      }
+    ],
+    "states": [
+      "DisableDepthTest"
+    ],
+    "msaaSupport": "Both"
+  }
+}

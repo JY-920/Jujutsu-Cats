@@ -1,0 +1,36 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="All Rights Reserved"
+
+[[mixins]]
+config="jujutsuvfx.mixins.json"
+
+[[mods]]
+modId="jujutsuvfx"
+version="0.102.5"
+displayName="咒术映界 · Jujutsu Realms"
+authors="VFX Workshop"
+description='''咒术映界：以渲染特效呈现苍、赫、茈、灶·开、无量空处与伏魔御厨子，包含咒力缠拳、黑闪和领域对抗。新增解与捌：解斩击生物，捌可沿斩面破坏普通方块；安装航空学并启用管理员的动态结构选项后，可通过 Sable 引擎将方块物理化并拆分结构。赫抬起手臂凝聚闪烁的红白磨砂小球：短按发射，长按自动蓄力为巨型光束炮，完全展开后保持 0.8 秒。苍赫碰撞时先收束为双球，再融合为无限制茈。全部物品集中在“咒术映界”创造物品栏。使用黑色染料外观的“五条悟老师”道具右键普通猫，道具旋转降落后变身为五条悟白猫；提供生成蛋、发光六眼与可逆眼罩调试棒。
+
+Jujutsu Realms brings rendered cursed techniques, domain clashes and Gojo Cat companions to Minecraft. Red forms as a flickering frosted red-white orb above a raised arm: tap for an orb, hold for a charged light cannon that persists for 0.8 seconds after reaching full length. Colliding Blue and Red condense into two orbs before fusing into Unlimited Purple. All items share one creative tab. Use the Gojo Teacher prop on a cat for a three-second descending transformation, preserving its pet data. The mod ID remains jujutsuvfx for existing saves.'''
+
+[[dependencies.jujutsuvfx]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.248,21.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.jujutsuvfx]]
+modId="sable"
+type="optional"
+versionRange="[2.0.3,2.1)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.jujutsuvfx]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1,1.21.2)"
+ordering="NONE"
+side="BOTH"

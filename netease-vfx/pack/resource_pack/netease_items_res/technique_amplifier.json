@@ -1,0 +1,11 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:technique_amplifier"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:technique_amplifier"
+    }
+  }
+}

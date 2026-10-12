@@ -1,0 +1,17 @@
+{
+  "vertex": "jujutsuvfx:domain_sky",
+  "fragment": "jujutsuvfx:shrine_impact",
+  "attributes": ["Position", "UV0", "Color"],
+  "samplers": [{"name": "SceneColor"}, {"name": "SceneDepth"}],
+  "uniforms": [
+    {"name": "Strength", "type": "float", "count": 1, "values": [1]},
+    {"name": "Impact0", "type": "float", "count": 4, "values": [0,0,0,0]},
+    {"name": "Impact1", "type": "float", "count": 4, "values": [0,0,0,0]},
+    {"name": "Impact2", "type": "float", "count": 4, "values": [0,0,0,0]},
+    {"name": "Impact3", "type": "float", "count": 4, "values": [0,0,0,0]},
+    {"name": "Axis0", "type": "float", "count": 4, "values": [1,0,0,0]},
+    {"name": "Axis1", "type": "float", "count": 4, "values": [1,0,0,0]},
+    {"name": "Axis2", "type": "float", "count": 4, "values": [1,0,0,0]},
+    {"name": "Axis3", "type": "float", "count": 4, "values": [1,0,0,0]}
+  ]
+}

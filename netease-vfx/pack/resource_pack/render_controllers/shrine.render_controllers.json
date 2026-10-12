@@ -1,0 +1,27 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.jujutsuvfx.shrine_body": {
+      "geometry": "Geometry.body",
+      "materials": [
+        {
+          "*": "Material.body"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.jujutsuvfx.shrine_light": {
+      "geometry": "Geometry.light",
+      "materials": [
+        {
+          "*": "Material.light"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    }
+  }
+}

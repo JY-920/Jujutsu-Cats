@@ -1,0 +1,19 @@
+* text=auto
+*.java text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+*.json text eol=lf
+*.bbmodel text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.fsh text eol=lf
+*.vsh text eol=lf
+*.fragment text eol=lf
+*.vertex text eol=lf
+gradlew text eol=lf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.ogg binary
+*.jar binary
+*.mesh binary

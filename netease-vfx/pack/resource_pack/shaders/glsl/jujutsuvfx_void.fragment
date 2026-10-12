@@ -1,0 +1,76 @@
+// __multiversion__
+precision highp float;
+#include "fragmentVersionCentroidUV.h"
+#include "uniformWorldConstants.h"
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
+LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2;
+uniform vec4 EXTRA_VECTOR1; // yaw / pitch / age / exit fade
+uniform vec4 EXTRA_VECTOR2; // world direction of the domain's black hole
+uniform vec4 EXTRA_VECTOR3; // aspect / tan(fov/2) / time remaining / flash enabled
+uniform vec4 EXTRA_VECTOR4;
+float hash3(vec3 p) { return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }
+float noise3(vec3 p) {
+    vec3 a=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+    return mix(mix(mix(hash3(a),hash3(a+vec3(1,0,0)),f.x),mix(hash3(a+vec3(0,1,0)),hash3(a+vec3(1,1,0)),f.x),f.y),
+        mix(mix(hash3(a+vec3(0,0,1)),hash3(a+vec3(1,0,1)),f.x),mix(hash3(a+vec3(0,1,1)),hash3(a+vec3(1,1,1)),f.x),f.y),f.z);
+}
+float fbm(vec3 p) { return noise3(p)*0.55+noise3(p*2.07)*0.28+noise3(p*4.13)*0.17; }
+vec3 stars(vec3 ray,float size) {
+    vec3 p=ray*size,cell=floor(p),f=fract(p)-0.5;
+    float seed=hash3(cell),s=exp(-dot(f,f)*260.0)*step(0.982,seed);
+    return mix(vec3(0.8,0.88,1),vec3(1,0.63,0.90),seed)*s*3.0;
+}
+void main() {
+    vec4 scene=texture2D(TEXTURE_0,uv);
+    float yaw=EXTRA_VECTOR1.x,pitch=EXTRA_VECTOR1.y,t=EXTRA_VECTOR1.z;
+    vec3 forward=vec3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch));
+    vec3 right=normalize(cross(forward,vec3(0,1,0))),up=cross(right,forward);
+    vec2 q=(uv*2.0-1.0)*vec2(EXTRA_VECTOR3.x,1)*EXTRA_VECTOR3.y;
+    vec3 ray=normalize(forward+right*q.x+up*q.y);
+    float clouds=fbm(ray*5.5+vec3(0,t*0.015,0));
+    vec3 sky=vec3(0.002,0.004,0.015)+vec3(0.05,0.012,0.11)*clouds;
+    float band=exp(-pow((ray.y+ray.x*0.36+sin(ray.z*3.0)*0.07)*8.0,2.0));
+    float dust=fbm(ray*14.0);
+    sky+=mix(vec3(0.23,0.07,0.4),vec3(0.9,0.69,0.9),dust)*band*pow(dust,2.0)*1.3;
+    sky+=stars(ray,78.0)+stars(ray,155.0)*0.75+stars(ray,265.0)*0.4;
+    vec3 bh=normalize(EXTRA_VECTOR2.xyz+vec3(0,0.18,0));
+    vec3 bx=normalize(cross(bh,vec3(0,1,0))),by=cross(bx,bh);
+    float facing=dot(ray,bh);
+    vec2 hole=vec2(dot(ray,bx),dot(ray,by))*2.75;
+    float r=length(hole),a=atan(hole.y,hole.x);
+    float arc=fbm(vec3(cos(a)*4.0,sin(a)*4.0,r*8.0-t*0.32));
+    float ring=exp(-pow((r-0.78)*21.0,2.0));
+    float wisps=exp(-abs(r-0.78)*8.0)*arc*arc;
+    if(facing>0.0) {
+        sky=mix(sky,vec3(0.0),1.0-smoothstep(0.55,0.59,r));
+        sky+=mix(vec3(0.48,0.60,0.91),vec3(1.0,0.89,0.68),0.5+sin(a)*0.3)*(ring*1.8+wisps*1.1);
+        sky+=vec3(0.7,0.83,1.0)*exp(-pow((r-0.605)*65.0,2.0))*0.55;
+    }
+    // Red, violet and pink information streams: #d12d57 / #5119c8 / #e999f7.
+    vec2 flow=vec2(q.x+q.y*0.17,q.y-q.x*0.17);
+    float lane=floor(flow.y*34.0),seed=hash3(vec3(lane,2.0,6.0));
+    float head=fract(flow.x*0.32-t*(2.3+seed*3.0)+seed*15.0);
+    float streak=exp(-abs(fract(flow.y*34.0)-0.5)*38.0)*pow(head,15.0)*step(0.3,seed);
+    vec3 tint=seed<0.52?vec3(0.8196,0.1765,0.3412):seed<0.75?vec3(0.3176,0.0980,0.7843):vec3(0.9137,0.6,0.9686);
+    sky+=tint*streak*2.7;
+    float depth=texture2D(TEXTURE_2,uv).r;
+    // Preserve all geometry, including other players; only sky pixels are replaced.
+    // A separate terrain mask is required for the Java port's invisible terrain feature.
+    float skyMask=step(0.99998,depth);
+    vec3 color=mix(scene.rgb*vec3(0.40,0.36,0.62),sky,skyMask);
+    color+=tint*streak*0.11;
+    // White spreads irregularly into reality, then tears open onto the cosmos.
+    float invasion=fbm(ray*8.0+vec3(0,t*0.45,0));
+    float entry=smoothstep(invasion*0.8,invasion*0.8+0.22,t);
+    float reveal=smoothstep(invasion*1.0+1.05,invasion*1.0+1.65,t);
+    float white=entry*(1.0-reveal)*EXTRA_VECTOR3.w;
+    float begin=EXTRA_VECTOR3.w>0.5?entry:smoothstep(0.0,0.8,t);
+    color=mix(scene.rgb,color,begin);
+    color=mix(color,vec3(0.94,0.95,1.0),white);
+    // Close foreground (first-person arms) stays in front of the white invasion.
+    float geometryDepth=abs(PROJ[3][2]/max(.000001,abs(depth*2.0-1.0+PROJ[2][2])));
+    float handMask=smoothstep(.32,.75,geometryDepth);
+    float clash=EXTRA_VECTOR4.w>.5?smoothstep(-.13,.13,dot(ray,normalize(EXTRA_VECTOR4.xyz+vec3(0,0,.0001)))):1.0;
+    color=mix(scene.rgb,color,EXTRA_VECTOR1.w*clash*handMask);
+    gl_FragColor=vec4(clamp(color,0.0,1.0),scene.a);
+}

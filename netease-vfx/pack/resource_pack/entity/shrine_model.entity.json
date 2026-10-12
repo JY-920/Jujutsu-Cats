@@ -1,0 +1,23 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "jujutsuvfx:shrine_model",
+      "materials": {
+        "body": "entity_alphatest",
+        "light": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/shrine_palette"
+      },
+      "geometry": {
+        "body": "geometry.jujutsuvfx.shrine.body",
+        "light": "geometry.jujutsuvfx.shrine.light"
+      },
+      "render_controllers": [
+        "controller.render.jujutsuvfx.shrine_body",
+        "controller.render.jujutsuvfx.shrine_light"
+      ]
+    }
+  }
+}

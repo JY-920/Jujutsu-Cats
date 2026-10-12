@@ -1,0 +1,45 @@
+{
+  "resource_pack_name": "jujutsuvfx",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "jujutsuvfx:blue": {
+      "textures": "textures/items/blue"
+    },
+    "jujutsuvfx:red": {
+      "textures": "textures/items/red"
+    },
+    "jujutsuvfx:purple": {
+      "textures": "textures/items/purple"
+    },
+    "jujutsuvfx:fuga": {
+      "textures": "textures/items/fuga"
+    },
+    "jujutsuvfx:dismantle": {
+      "textures": "textures/items/dismantle"
+    },
+    "jujutsuvfx:cleave": {
+      "textures": "textures/items/cleave"
+    },
+    "jujutsuvfx:malevolent_shrine": {
+      "textures": "textures/items/malevolent_shrine"
+    },
+    "jujutsuvfx:unlimited_void": {
+      "textures": "textures/items/unlimited_void"
+    },
+    "jujutsuvfx:cursed_fist": {
+      "textures": "textures/items/cursed_fist"
+    },
+    "jujutsuvfx:infinity": {
+      "textures": "textures/items/infinity"
+    },
+    "jujutsuvfx:reverse_technique": {
+      "textures": "textures/items/reverse_technique"
+    },
+    "jujutsuvfx:technique_amplifier": {
+      "textures": "textures/items/technique_amplifier"
+    },
+    "jujutsuvfx:information_fragment": {
+      "textures": "textures/items/information_fragment"
+    }
+  }
+}

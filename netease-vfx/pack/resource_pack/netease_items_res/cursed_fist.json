@@ -1,0 +1,14 @@
+{
+  "format_version": "1.10",
+  "minecraft:item": {
+    "description": {
+      "identifier": "jujutsuvfx:cursed_fist"
+    },
+    "components": {
+      "minecraft:icon": "jujutsuvfx:cursed_fist",
+      "netease:show_in_hand": {
+        "value": false
+      }
+    }
+  }
+}

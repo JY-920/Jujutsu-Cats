@@ -1,0 +1,39 @@
+allprojects {
+    afterEvaluate {
+        def installedBase = project.file(providers.gradleProperty('shinjukuBaseJar').getOrElse(
+            'D:/PCL2/PCL/.minecraft/versions/1.21.1-NeoForge模组开发/mods/jujutsu-vfx-0.65.0-neoforge-1.21.1.jar'))
+        def isolatedRoot = project.file(providers.gradleProperty('shinjukuIsolatedRoot').getOrElse('build/shinjuku-isolated'))
+        def isolatedClasspath = project.files(installedBase) + sourceSets.main.compileClasspath
+        if (providers.gradleProperty('shinjukuStageClasses').isPresent())
+            isolatedClasspath = project.files(providers.gradleProperty('shinjukuStageClasses').get()) + isolatedClasspath
+        tasks.register('compileShinjukuIsolated', JavaCompile) {
+            dependsOn tasks.named('createMinecraftArtifacts'), tasks.named('prepareSableApi')
+            source project.fileTree(new File(isolatedRoot, 'release-source')) { include '**/*.java' }
+            classpath = isolatedClasspath
+            destinationDirectory = new File(isolatedRoot, 'classes')
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+            options.encoding = 'UTF-8'
+        }
+        tasks.register('compileShinjukuBaselineReview', JavaCompile) {
+            dependsOn tasks.named('createMinecraftArtifacts'), tasks.named('prepareSableApi')
+            source project.fileTree(new File(isolatedRoot, 'baseline-source')) { include '**/*.java' }
+            classpath = isolatedClasspath
+            destinationDirectory = new File(isolatedRoot, 'baseline-classes')
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+            options.encoding = 'UTF-8'
+        }
+        tasks.register('compileShinjukuBytecodeReview', JavaCompile) {
+            source project.file('tools/ShinjukuBytecodeReview.java')
+            classpath = sourceSets.main.compileClasspath
+            destinationDirectory = new File(isolatedRoot, 'review-classes')
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+            options.encoding = 'UTF-8'
+        }
+        tasks.register('verifyShinjukuIsolated', JavaExec) {
+            dependsOn tasks.named('compileShinjukuIsolated'), tasks.named('compileShinjukuBaselineReview'), tasks.named('compileShinjukuBytecodeReview')
+            classpath = project.files(new File(isolatedRoot, 'review-classes')) + project.files(sourceSets.main.compileClasspath.files)
+            mainClass = 'dev.jujutsuvfx.review.ShinjukuBytecodeReview'
+            args installedBase.absolutePath, isolatedRoot.absolutePath
+        }
+    }
+}

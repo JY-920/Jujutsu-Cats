@@ -1,0 +1,304 @@
+// __multiversion__
+precision highp float;
+#include "fragmentVersionCentroidUV.h"
+#include "uniformWorldConstants.h"
+LAYOUT_BINDING(0) uniform sampler2D TEXTURE_0;
+LAYOUT_BINDING(2) uniform sampler2D TEXTURE_2;
+uniform vec4 EXTRA_VECTOR1; // camera-space centre / radius
+uniform vec4 EXTRA_VECTOR2; // seconds / phase / phase seconds / opacity
+uniform vec4 EXTRA_VECTOR3; // aspect / tan(fov/2) / flash enabled / large
+uniform vec4 EXTRA_VECTOR4; // amplified / world-space camera forward
+
+const vec3 SHELL=vec3(0.184314,0.133333,0.741176); // #2f22bd
+const float PI2=6.283185307;
+vec3 cameraRight,cameraUp,cameraForward;
+
+// Multiplication hashes avoid the large sine arguments that lose precision on GLES.
+float hash3(vec3 p) {
+    p=fract(p*.1031);p+=dot(p,p.yzx+33.33);
+    return fract((p.x+p.y)*p.z);
+}
+float hash2(vec2 p) { return hash3(vec3(p,p.x*.37+p.y*.61)); }
+float noise3(vec3 p) {
+    vec3 a=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+    return mix(mix(mix(hash3(a),hash3(a+vec3(1,0,0)),f.x),
+                   mix(hash3(a+vec3(0,1,0)),hash3(a+vec3(1,1,0)),f.x),f.y),
+               mix(mix(hash3(a+vec3(0,0,1)),hash3(a+vec3(1,0,1)),f.x),
+                   mix(hash3(a+vec3(0,1,1)),hash3(a+vec3(1,1,1)),f.x),f.y),f.z);
+}
+mat2 rotate(float a) { float s=sin(a),c=cos(a);return mat2(c,s,-s,c); }
+float square(float x) { return x*x; }
+float view_depth(float depth) {
+    return abs(PROJ[3][2]/max(.000001,abs(depth*2.0-1.0+PROJ[2][2])));
+}
+vec3 world_frame(vec3 p) {
+    vec3 world=cameraRight*p.x+cameraUp*p.y+cameraForward*p.z;
+    return vec3(-world.x,world.y,world.z);
+}
+vec3 galaxy_frame(vec3 p,float t) {
+    p=world_frame(p);
+    p.yz=rotate(.58)*p.yz;p.xz=rotate(-.32)*p.xz;
+    // Rotating the sampled field counter-clockwise makes its matter turn clockwise.
+    p.xy=rotate(t*.92)*p.xy;
+    return p;
+}
+
+vec4 purple_field(vec3 q,float t) {
+    float r=length(q);
+    if(r>1.11)return vec4(0);
+    vec3 disk=galaxy_frame(q,t);
+    float cloud=noise3(disk*3.7+vec3(t*.23,-t*.41,t*.17));
+    float detail=noise3(disk*13.2+vec3(-t*.37,t*.61,t*.29));
+    float edge=r+(cloud-.5)*.12;
+    float radial=length(disk.xy),angle=atan(disk.y,disk.x+.000001);
+    float spiral=.5+.5*sin(angle*2.0-radial*12.0+cloud*4.6-t*.95);
+    float arms=spiral*spiral;arms=arms*arms*spiral;
+    float warpedZ=disk.z+.07*sin(disk.x*6.0+t*.8)+(cloud-.5)*.11;
+    float plane=exp(-square(warpedZ/(.125+.045*exp(-radial*radial*5.0))));
+    float crossPlane=exp(-square((disk.z*.64+disk.y*.52-disk.x*.12+(cloud-.5)*.065)/.12));
+    vec3 ellipse=disk*vec3(2.7,3.6,3.0);
+    float concentration=exp(-dot(ellipse,ellipse));
+    float torn=smoothstep(.32,.69,detail*.67+cloud*.33);
+    float threads=square(square(.5+.5*sin(disk.x*39.0-disk.y*27.0+detail*8.0+t*2.2)));
+    float knots=smoothstep(.59,.76,detail)*smoothstep(.38,.56,cloud);
+    // White comes from intersecting torn stellar sheets, never an opaque central ball.
+    float galaxy=plane*exp(-radial*radial*2.2)*(arms*.80+threads*.25)*(.08+torn*.92);
+    galaxy+=concentration*(plane*(.40+torn*torn*1.7+threads*.70)+crossPlane*(.12+detail*.35));
+    galaxy+=plane*exp(-radial*radial*2.1)*knots*1.35;
+    galaxy*=1.0-smoothstep(.82,1.11,edge);
+    float mantle=1.0-smoothstep(.92,1.07,edge);
+    float skin=exp(-square((edge-.97)/.045))*(.18+.82*cloud);
+    float nebula=mantle*(.23+arms*plane*.15+cloud*.22)+skin*.18;
+    float stars=galaxy*.44;
+    vec3 violet=mix(vec3(.28,.006,1.18),vec3(1.3,.055,2.6),clamp(arms*.60+cloud*.45,0.0,1.0));
+    violet=mix(violet,SHELL*(.48+.67*cloud),smoothstep(.58,1.025,edge)*.94);
+    vec3 stellar=mix(vec3(2.2,.72,3.3),vec3(5.4,5.1,5.9),clamp(exp(-radial*radial*3.0)*.85+detail*.30,0.0,1.0));
+    stellar+=vec3(4.0,4.0,4.2)*knots;
+    stellar*=1.0+EXTRA_VECTOR4.x*(.30+knots*.60);
+    float density=nebula+stars;
+    return vec4((violet*nebula+stellar*stars)/max(density,.0001),density);
+}
+
+vec4 fusion_field(vec3 q,float t,float kind) {
+    float r=length(q);
+    if(r>1.13)return vec4(0);
+    q=world_frame(q);
+    q.xy=rotate(t*(kind<.5?1.4:-1.2))*q.xy;
+    float cloud=noise3(q*4.0+vec3(t*.4,-t*.6,t*.3));
+    float detail=noise3(q*11.0+vec3(-t*.7,t*.3,t*.8));
+    float surface=r+(cloud-.5)*.14;
+    float mantle=1.0-smoothstep(.90,1.08,surface);
+    vec3 inner=q*vec3(2.7,3.0,2.5);
+    float centre=exp(-dot(inner,inner));
+    float crease=square(square(.5+.5*sin(q.x*8.0-q.y*11.0+q.z*7.0+cloud*7.0-t*4.0)));
+    vec3 dark=kind<.5?vec3(.015,.025,.72):vec3(.40,.002,.015);
+    vec3 hue=kind<.5?vec3(.02,.75,2.1):vec3(2.1,.008,.08);
+    vec3 color=mix(hue,dark,smoothstep(.45,1.08,surface))*(.55+cloud*.8);
+    color+=hue*crease*detail*.65+vec3(2.8,2.7,3.0)*centre*(.4+detail);
+    return vec4(color,mantle*(.80+cloud*.45+centre*1.8));
+}
+
+// Analytic dust planes retain tiny individual stars without increasing march steps.
+vec3 galaxy_stars(vec3 ray,vec3 center,float radius,float terrain,float t) {
+    vec3 origin=galaxy_frame(-center/radius,t),direction=galaxy_frame(ray,t);
+    vec3 light=vec3(0);
+    float pixel=.0016*max(center.z,.1)/radius;
+    for(int layer=0;layer<2;layer++) {
+        vec3 o=origin,d=direction;
+        if(layer==1) {
+            vec3 x=normalize(vec3(.64,0,.12)),z=normalize(vec3(-.12,.52,.64)),y=cross(z,x);
+            o=vec3(dot(origin,x),dot(origin,y),dot(origin,z));
+            d=vec3(dot(direction,x),dot(direction,y),dot(direction,z));
+        }
+        float hit=-o.z*(d.z<0.0?-1.0:1.0)/max(abs(d.z),.04);
+        vec2 p=o.xy+d.xy*hit;
+        float r=length(p),limit=layer==0?.96:.64;
+        if(hit*radius<=.025||hit*radius*ray.z>=terrain||r>limit||abs(d.z)<.055)continue;
+        float angle=atan(p.y,p.x+.000001);
+        float wave=.5+.5*sin(angle*2.0-r*12.0-t*.95);
+        float arms=wave*wave*wave*wave*wave;
+        float concentration=exp(-r*r*6.0)*.50+arms*exp(-r*r*3.0)*.30;
+        float scale=layer==0?92.0:113.0;
+        vec2 grid=p*scale,cell=floor(grid),point=fract(grid)-.5;
+        float seed=hash2(cell+float(layer)*31.17);
+        if(seed<1.0-concentration)continue;
+        point-=(vec2(hash2(cell+27.3),hash2(cell+63.1))-.5)*.78;
+        float width=.040+.075*hash2(cell+14.1),aa=clamp(pixel*scale*.26,.045,.50);
+        float filterWidth=width*width+aa*aa;
+        float star=exp(-dot(point,point)/filterWidth)*width*width/filterWidth;
+        if(seed>.989) {
+            vec2 spread=sqrt(vec2(.016*.016,.20*.20)+aa*aa);
+            vec2 v=point/spread,h=point/spread.yx;
+            star+=(exp(-dot(v,v))+exp(-dot(h,h)))*.0032/(spread.x*spread.y)*.32;
+        }
+        float edge=1.0-smoothstep(limit*.80,limit,r);
+        float twinkle=.82+.18*sin(t*(2.3+seed*1.1)+seed*61.0);
+        light+=mix(vec3(3.2,1.15,4.6),vec3(7.0,6.6,7.6),exp(-r*r*4.0))
+            *star*edge*twinkle*smoothstep(.055,.24,abs(d.z))*(layer==0?1.0:.60);
+    }
+    return light;
+}
+
+vec4 orb(vec3 ray,vec3 center,float radius,float kind,float terrain,float t) {
+    float along=dot(ray,center),bound=radius*1.12;
+    float disc=along*along+bound*bound-dot(center,center);
+    if(disc<=0.0||along+bound<=.025)return vec4(0);
+    float root=sqrt(disc),first=max(.025,along-root);
+    float last=min(along+root,terrain/max(ray.z,.001));
+    if(last<=first)return vec4(0);
+    float stepSize=(last-first)/18.0;
+    // Fixed jitter suppresses sampling bands without temporal speckling or replay.
+    float jitter=.35+.30*hash2(floor(gl_FragCoord.xy));
+    vec4 sum=vec4(0);
+    for(int i=0;i<18;i++) {
+        vec3 p=(ray*(first+(float(i)+jitter)*stepSize)-center)/radius;
+        vec4 field=kind>1.5?purple_field(p,t):fusion_field(p,t,kind);
+        float alpha=1.0-exp(-field.a*stepSize*3.8/radius);
+        sum.rgb+=(1.0-sum.a)*field.rgb*alpha;sum.a+=(1.0-sum.a)*alpha;
+        if(sum.a>.995)break;
+    }
+    // Absorb the background through the mantle without turning the stellar centre
+    // into a larger white blob; this is an optical-density change, not added bloom.
+    float opaque=1.0-square(1.0-sum.a);
+    sum.rgb*=opaque/max(sum.a,.0001);sum.a=opaque;
+    if(kind>1.5) {
+        float closest=sqrt(max(dot(center,center)-along*along,0.0))/radius;
+        float visible=step(first*ray.z,terrain);
+        vec3 normal=(ray*first-center)/radius;
+        float cloud=noise3(world_frame(normal)*8.0+vec3(t*.18,-t*.24,t*.13));
+        float edge=closest+(cloud-.5)*.017;
+        float shell=smoothstep(.845,.970,edge)*(1.0-smoothstep(.995,1.095,edge));
+        float rimAlpha=shell*(.58+.20*cloud)*visible;
+        sum.rgb+=galaxy_stars(ray,center,radius,terrain,t)*(1.0-smoothstep(.76,1.04,closest));
+        // Opaque blue-violet absorption on the silhouette keeps the sphere substantial.
+        sum.rgb=sum.rgb*(1.0-rimAlpha)+SHELL*(.56+.50*cloud)*rimAlpha;
+        sum.a=sum.a+(1.0-sum.a)*rimAlpha;
+    }
+    return sum;
+}
+
+vec4 purple_air(vec2 p,float t,float growth) {
+    float r=length(p);
+    if(r<.82||r>3.25)return vec4(0);
+    vec2 displacement=vec2(0);float shadow=0.0,gleam=0.0;
+    float free=max(r-.96,0.0);
+    vec2 radial=p/max(r,.001),tangent=vec2(-radial.y,radial.x);
+    for(int i=0;i<6;i++) {
+        float seed=hash2(vec2(float(i)*17.31,29.7));
+        // Open hooks meet the sphere tangentially; their folds travel tip to centre.
+        float hook=(.73+seed*.23)*(1.0-exp(-free*1.8))+.13*free;
+        float angle=(float(i)+.32*(seed-.5))*1.04719755-t*.92+hook
+                   +.055*sin(t*.91+seed*19.0+free*2.0);
+        vec2 outward=vec2(cos(angle),sin(angle)),side=vec2(-outward.y,outward.x);
+        float reach=mix(1.65,1.80+hash2(vec2(seed,41.7))*1.25,.50+.50*growth);
+        if(dot(p,outward)<0.0||r>reach)continue;
+        float travel=r*(6.8+seed)+t*(8.5+seed*2.0)+seed*17.0;
+        float along=clamp(free/max(reach-.96,.01),0.0,1.0);
+        float width=(.21+seed*.15)*(1.0-.78*along)*(.91+.09*sin(travel));
+        float x=dot(p,side)/max(width,.01);
+        float sheet=exp(-x*x*1.30)*smoothstep(.86,1.035,r)*(1.0-smoothstep(reach-.38,reach,r));
+        sheet*=.82+.18*sin(t*1.3+seed*17.0);
+        float folds=sin(x*3.1+sin(travel)*.65);
+        displacement+=side*sheet*folds*(.21+seed*.15)
+                     +(radial*.19+tangent*.22)*sheet*(.68+.32*sin(travel));
+        shadow=max(shadow,sheet*(.12+.65*exp(-square(x-.43)*45.0)));
+        gleam=max(gleam,sheet*exp(-square(x+.48)*70.0)*(.70+.30*sin(travel)));
+    }
+    displacement*=min(1.0,.46/max(length(displacement),.0001));
+    return vec4(displacement,shadow,gleam);
+}
+
+vec3 lightning(vec2 p,float t) {
+    float r=length(p);
+    if(r<.28||r>3.1)return vec3(0);
+    float pulseId=floor(t*3.0),beat=fract(t*3.0);
+    float pulse=(1.0-smoothstep(.07,.28,beat))*smoothstep(0.0,.018,beat);
+    if(pulse<=0.0)return vec3(0);
+    vec3 color=vec3(0);
+    for(int i=0;i<3;i++) {
+        float seed=hash2(vec2(pulseId,float(i)*19.7+7.1));
+        if(i>0&&seed<.48)continue;
+        float angle=hash2(vec2(pulseId+29.0,float(i)+8.2))*PI2;
+        vec2 d=vec2(cos(angle),sin(angle)),side=vec2(-d.y,d.x);
+        float x=dot(p,d),y=dot(p,side);
+        float reach=1.70+seed*1.3;
+        if(x<.25||x>reach)continue;
+        float segment=x*6.0,cell=floor(segment),f=fract(segment);
+        float n0=hash3(vec3(cell,pulseId,float(i))),n1=hash3(vec3(cell+1.0,pulseId,float(i)));
+        float kink=(mix(n0,n1,f)-.5)*(.12+x*.075)+sin(x*3.1+seed*12.0)*.08*x;
+        float distance=abs(y-kink),width=.020+seed*.009;
+        float ends=smoothstep(.25,.50,x)*(1.0-smoothstep(reach-.30,reach,x));
+        float core=1.0-smoothstep(width*.42,width,distance);
+        float violet=exp(-square(distance/(width*2.6)));
+        float halo=exp(-square(distance/(width*6.0)));
+        color+=(vec3(.30,.035,.85)*halo*.28+vec3(.72,.16,1.65)*violet*.88
+                +vec3(2.0,1.82,2.25)*core)*ends*pulse;
+        // A short split keeps each chain jagged rather than a perfect radial spoke.
+        float branch=x-(.74+seed*.42);
+        float split=abs(y-kink-branch*(seed>.5?.55:-.55));
+        float branchEnds=smoothstep(0.0,.10,branch)*(1.0-smoothstep(.38,.73,branch));
+        color+=(vec3(.64,.12,1.5)*exp(-square(split/(width*1.8)))
+               +vec3(1.5,1.35,1.65)*(1.0-smoothstep(width*.25,width*.62,split)))*branchEnds*pulse*.70;
+    }
+    return color;
+}
+
+void main() {
+    vec4 original=texture2D(TEXTURE_0,uv);
+    vec3 center=EXTRA_VECTOR1.xyz;
+    float radius=max(.06,EXTRA_VECTOR1.w),t=EXTRA_VECTOR2.x,phase=EXTRA_VECTOR2.y,age=EXTRA_VECTOR2.z;
+    float strength=clamp(EXTRA_VECTOR2.w,0.0,1.0);
+    if(strength<=0.0||center.z < -radius*2.0) {gl_FragColor=original;return;}
+    vec3 rawForward=EXTRA_VECTOR4.yzw;
+    cameraForward=dot(rawForward,rawForward)>.000001?normalize(rawForward):vec3(0,0,1);
+    vec3 rawRight=cross(cameraForward,vec3(0,1,0));
+    cameraRight=dot(rawRight,rawRight)>.000001?normalize(rawRight):vec3(-1,0,0);
+    cameraUp=normalize(cross(cameraRight,cameraForward));
+    vec2 aspect=vec2(max(EXTRA_VECTOR3.x,.01),1.0);
+    float tangent=max(EXTRA_VECTOR3.y,.01);
+    vec2 screen=(uv*2.0-1.0)*aspect*tangent;
+    vec3 ray=normalize(vec3(screen,1.0));
+    float depth=texture2D(TEXTURE_2,uv).r;
+    float terrain=depth>.99999?100000.0:view_depth(depth);
+    vec4 body=vec4(0);
+    float fused=1.0;
+    if(phase>1.5&&phase<2.5) {
+        float progress=clamp(age/3.0,0.0,1.0),boost=EXTRA_VECTOR4.x;
+        float merge=smoothstep(.10,.94,progress),angle=-age*(2.0+boost*1.4);
+        vec3 offset=vec3(cos(angle),sin(angle)*(.55+boost*.3),sin(angle)*boost*.25)
+                   *(1.0-merge)*(3.6+boost*1.1);
+        float lobe=.65+merge*.70+boost*.3;
+        vec4 blue=orb(ray,center-offset,lobe,0.0,terrain,t);
+        vec4 red=orb(ray,center+offset,lobe,1.0,terrain,t);
+        body=offset.z>0.0?vec4(blue.rgb+red.rgb*(1.0-blue.a),blue.a+red.a*(1.0-blue.a))
+                         :vec4(red.rgb+blue.rgb*(1.0-red.a),red.a+blue.a*(1.0-red.a));
+        fused=smoothstep(.57,.96,progress);
+        if(fused>.001) {
+            vec4 central=orb(ray,center,max(.12,radius*(.12+.88*fused)),2.0,terrain,t);
+            body=vec4(central.rgb*fused+body.rgb*(1.0-central.a*fused),central.a*fused+body.a*(1.0-central.a*fused));
+        }
+    } else body=orb(ray,center,radius,2.0,terrain,t);
+    vec2 projected=center.xy/max(center.z,.1);
+    vec2 q=(screen-projected)*max(center.z,.1)/radius;
+    float r=length(q),along=dot(ray,center);
+    float visibility=smoothstep(0.0,max(.05,radius*.2),terrain-max(.025,along-radius*.5)*ray.z)*step(0.0,center.z);
+    float growth=phase<3.5?clamp(age*.60,.25,1.0):1.0;
+    vec4 air=purple_air(q,t,growth)*visibility*strength*(.35+.65*fused);
+    float lens=exp(-square((r-1.2)/1.10))*smoothstep(.7,1.1,r)*visibility;
+    vec2 swirl=(q*.042+vec2(-q.y,q.x)*.062)*lens;
+    vec2 warp=(air.xy+swirl)*radius/max(center.z,.1)/(2.0*aspect*tangent)*strength;
+    vec2 sampleUv=clamp(uv+warp,vec2(.001),vec2(.999));
+    float sampledDepth=texture2D(TEXTURE_2,sampleUv).r;
+    if(sampledDepth<.99999&&view_depth(sampledDepth)<center.z-radius*1.25) {
+        sampleUv=mix(uv,sampleUv,.04);air*=.1;
+    }
+    vec3 scene=texture2D(TEXTURE_0,sampleUv).rgb;
+    scene=scene*(1.0-air.z*.27)+vec3(.70,.80,.96)*air.w*.12;
+    vec3 color=scene*(1.0-body.a*strength)+body.rgb*strength;
+    float halo=exp(-r*r*.56)*visibility;
+    color+=vec3(.16,.085,.64)*halo*.24*strength;
+    color+=lightning(q,t)*visibility*strength*fused;
+    float flash=phase>3.5&&phase<4.5?exp(-age*24.0)*.12:0.0;
+    color=mix(color,vec3(1),flash*EXTRA_VECTOR3.z*strength);
+    gl_FragColor=vec4(clamp(color,0.0,1.0),original.a);
+}
