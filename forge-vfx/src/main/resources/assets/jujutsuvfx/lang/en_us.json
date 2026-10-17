@@ -268,5 +268,7 @@
   "gui.jujutsuvfx.domains.timeout": "Server did not reply in time. Retry or reopen.",
   "gui.jujutsuvfx.domains.external": "Server settings changed; your draft was kept.",
   "gui.jujutsuvfx.config.domains": "Domain durations…",
-  "gui.jujutsuvfx.config.domains.tooltip": "Set both domain durations independently. Saved by the server; operators only."
+  "gui.jujutsuvfx.config.domains.tooltip": "Set both domain durations independently. Saved by the server; operators only.",
+  "item.jujutsuvfx.world_cut": "World-Cutting Slash",
+  "item.jujutsuvfx.world_cut.use": "Right-click: pierce living targets along a 48-block path and execute them"
 }

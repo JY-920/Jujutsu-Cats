@@ -134,7 +134,7 @@ public final class SukunaSlashHands {
             stack.mulPose(Axis.XP.rotationDegrees(frame.pitch));
             stack.mulPose(Axis.ZP.rotationDegrees(side * frame.roll));
             FirstPersonArmSpace.apply(stack, arm);
-            float weight=pose==null?0:pose.kind==SukunaSlashItem.Kind.DISMANTLE
+            float weight=pose==null?0:pose.kind!=SukunaSlashItem.Kind.CLEAVE
                     ?smooth(pose.age/.12f)*(1-smooth((pose.age-.65f)/.35f))
                     :smooth((pose.chargeAge+(pose.released?pose.age:0))/.14f)*(1-pose.release);
             FirstPersonArmSpace.fromEmpty(stack,parent,arm,event.getEquipProgress(),event.getSwingProgress(),weight,false);

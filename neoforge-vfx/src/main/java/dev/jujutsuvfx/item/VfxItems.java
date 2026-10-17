@@ -27,6 +27,8 @@ public final class VfxItems {
             () -> new SukunaSlashItem(SukunaSlashItem.Kind.DISMANTLE));
     public static final DeferredItem<SukunaSlashItem> CLEAVE = ITEMS.register("cleave",
             () -> new SukunaSlashItem(SukunaSlashItem.Kind.CLEAVE));
+    public static final DeferredItem<SukunaSlashItem> WORLD_CUT = ITEMS.register("world_cut",
+            () -> new SukunaSlashItem(SukunaSlashItem.Kind.WORLD_CUT));
     public static final DeferredItem<SkillItem> UNLIMITED_VOID = skill("unlimited_void", SkillItem.Kind.VOID);
     public static final DeferredItem<SkillItem> MALEVOLENT_SHRINE = skill("malevolent_shrine", SkillItem.Kind.SHRINE);
     public static final DeferredItem<InformationFragmentItem> INFORMATION_FRAGMENT = ITEMS.register("information_fragment", InformationFragmentItem::new);
@@ -54,6 +56,7 @@ public final class VfxItems {
                 output.accept(FUGA.get());
                 output.accept(DISMANTLE.get());
                 output.accept(CLEAVE.get());
+                output.accept(WORLD_CUT.get());
                 output.accept(UNLIMITED_VOID.get());
                 output.accept(MALEVOLENT_SHRINE.get());
                 output.accept(INFORMATION_FRAGMENT.get());

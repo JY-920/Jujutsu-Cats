@@ -25,6 +25,8 @@ public final class VfxItems {
     public static final RegistryObject<SkillItem> FUGA = skill("fuga", SkillItem.Kind.FUGA);
     public static final RegistryObject<SukunaSlashItem> DISMANTLE = ITEMS.register("dismantle",
             () -> new SukunaSlashItem(SukunaSlashItem.Kind.DISMANTLE));
+    public static final RegistryObject<SukunaSlashItem> WORLD_CUT = ITEMS.register("world_cut",
+            () -> new SukunaSlashItem(SukunaSlashItem.Kind.WORLD_CUT));
     public static final RegistryObject<SukunaSlashItem> CLEAVE = ITEMS.register("cleave",
             () -> new SukunaSlashItem(SukunaSlashItem.Kind.CLEAVE));
     public static final RegistryObject<SkillItem> UNLIMITED_VOID = skill("unlimited_void", SkillItem.Kind.VOID);
@@ -54,6 +56,7 @@ public final class VfxItems {
                 output.accept(FUGA.get());
                 output.accept(DISMANTLE.get());
                 output.accept(CLEAVE.get());
+                output.accept(WORLD_CUT.get());
                 output.accept(UNLIMITED_VOID.get());
                 output.accept(MALEVOLENT_SHRINE.get());
                 output.accept(INFORMATION_FRAGMENT.get());

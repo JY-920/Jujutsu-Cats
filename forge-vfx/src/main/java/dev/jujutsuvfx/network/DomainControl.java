@@ -57,6 +57,8 @@ public record DomainControl(int action, int session, double x, double y, double 
         TechniqueControl.registerPayloads(event);
         FistImpact.registerPayloads(event);
         SukunaCut.registerPayloads(event);
+        event.registrar("1").optional().playToClient(WorldCutEffect.TYPE,WorldCutEffect.CODEC,(packet,context)->
+                context.enqueueWork(()->dev.jujutsuvfx.client.WorldCutRenderer.receive(packet)));
         event.registrar("1").optional().playToServer(GojoCatEdit.TYPE,GojoCatEdit.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.server.GojoCatControl.edit(packet,context.player())));
         event.registrar("1").optional().playToClient(GojoCatView.TYPE,GojoCatView.CODEC,(packet,context)->

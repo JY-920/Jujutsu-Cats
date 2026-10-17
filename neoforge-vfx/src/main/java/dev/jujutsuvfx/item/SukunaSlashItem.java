@@ -21,7 +21,7 @@ import java.util.List;
 
 /** Dismantle strikes on press; Cleave charges while held and releases one finite attack on mouse-up. */
 public final class SukunaSlashItem extends Item {
-    public enum Kind { DISMANTLE, CLEAVE }
+    public enum Kind { DISMANTLE, CLEAVE, WORLD_CUT }
 
     // Installed only by client setup; this common item cannot load a client renderer on a server.
     public interface ClientActions {

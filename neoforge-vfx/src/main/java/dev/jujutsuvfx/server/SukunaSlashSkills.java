@@ -77,6 +77,7 @@ public final class SukunaSlashSkills {
     private SukunaSlashSkills() {}
 
     public static boolean cast(ServerPlayer player, InteractionHand hand, SukunaSlashItem.Kind kind) {
+        if(kind==SukunaSlashItem.Kind.WORLD_CUT)return WorldCutSkills.cast(player,hand);
         if (!player.isAlive() || player.isSpectator()
                 || !(player.getItemInHand(hand).getItem() instanceof SukunaSlashItem item) || item.kind() != kind
                 || player.getCooldowns().isOnCooldown(item)) return false;

@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'net.minecraftforge.gradle' version '6.0.54'
 }
-version = '0.102.5-forge-1.20.1'
+version = '0.102.6-forge-1.20.1'
 group = 'dev.jujutsuvfx'
 base { archivesName = 'jujutsu-vfx' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -98,3 +98,29 @@ tasks.register("verifyDomainSettings", JavaExec) {
     mainClass = "dev.jujutsuvfx.network.DomainSettingsPayloadTest"
 }
 tasks.named("check") { dependsOn tasks.named("verifyDomainSettings") }
+
+tasks.register("verifyPlaneCut", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.PlaneCutTest"
+}
+tasks.register("verifyWorldCutPacket", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.network.WorldCutEffectTest"
+}
+tasks.named("check") { dependsOn "verifyPlaneCut", "verifyWorldCutPacket" }
+
+tasks.register("verifyCutMeshCapture", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.client.CutMeshCaptureTest"
+}
+tasks.named("check") { dependsOn "verifyCutMeshCapture" }
+
+tasks.register("verifyWorldCutPath", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.WorldCutPathTest"
+}
+tasks.named("check") { dependsOn "verifyWorldCutPath" }

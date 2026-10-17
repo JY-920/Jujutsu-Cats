@@ -108,6 +108,13 @@ public abstract class SorcererCat extends TamableAnimal {
             finaleWard(false);super.kill();}
         finally{forcedDeath=false;}
     }
+    /** Dedicated execution path: no damage amount and no narrative death interception. */
+    public void executeWorldCut(DamageSource source){
+        forcedDeath=true;resumeLastStand=false;
+        try{dev.jujutsuvfx.server.GojoLastStand.cancel(this);CatDuel.cancelFor(this);CatSorcery.cancelAll(this);
+            finaleWard(false);setHealth(0);super.die(source);setHealth(0);remove(RemovalReason.KILLED);}
+        finally{forcedDeath=false;}
+    }
     @Override public void die(DamageSource source){
         if(!level().isClientSide&&!forcedDeath&&!source.is(DamageTypes.GENERIC_KILL)
                 &&!CatDuel.finaleDamage(this,source)&&dev.jujutsuvfx.server.GojoLastStand.begin(this,source))return;

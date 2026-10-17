@@ -268,5 +268,7 @@
   "gui.jujutsuvfx.domains.timeout": "服务器未及时回复；可重试或重新打开。",
   "gui.jujutsuvfx.domains.external": "服务器设置已更新；未保存的输入已保留。",
   "gui.jujutsuvfx.config.domains": "领域持续时间…",
-  "gui.jujutsuvfx.config.domains.tooltip": "分别设置两个领域的持续时间。服务器保存，仅管理员可修改。"
+  "gui.jujutsuvfx.config.domains.tooltip": "分别设置两个领域的持续时间。服务器保存，仅管理员可修改。",
+  "item.jujutsuvfx.world_cut": "空间斩",
+  "item.jujutsuvfx.world_cut.use": "右键：贯穿前方48格的生物，切开并直接处决"
 }
