@@ -1,0 +1,76 @@
+{
+  "blend": {
+    "func": "add",
+    "srcrgb": "srcalpha",
+    "dstrgb": "1-srcalpha",
+    "srcalpha": "0",
+    "dstalpha": "1"
+  },
+  "vertex": "jujutsuvfx:cursed_speech_air",
+  "fragment": "jujutsuvfx:cursed_speech_air",
+  "attributes": [
+    "Position",
+    "UV0",
+    "Color"
+  ],
+  "samplers": [
+    {
+      "name": "SceneColor"
+    },
+    {
+      "name": "SceneDepth"
+    }
+  ],
+  "uniforms": [
+    {
+      "name": "ViewProjection",
+      "type": "matrix4x4",
+      "count": 16,
+      "values": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Time",
+      "type": "float",
+      "count": 1,
+      "values": [
+        0
+      ]
+    },
+    {
+      "name": "Viewport",
+      "type": "float",
+      "count": 4,
+      "values": [
+        0,
+        0,
+        1920,
+        1080
+      ]
+    },
+    {
+      "name": "Strength",
+      "type": "float",
+      "count": 1,
+      "values": [
+        1
+      ]
+    }
+  ]
+}

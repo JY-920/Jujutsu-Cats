@@ -105,6 +105,20 @@ public final class CleaveTerrain {
         queue.addLast(new Job(owner, cells));
         return true;
     }
+    /** Space-cut flight uses the same checked, drop-free terrain queue, without physics assembly. */
+    static void sweep(ServerPlayer owner,Vec3 from,Vec3 to,Vec3 stroke){
+        if(!TechniqueTerrainRules.canGrief(owner)||!finite(from)||!finite(to)||!finite(stroke))return;
+        ServerLevel level=owner.serverLevel();
+        var queue=JOBS.computeIfAbsent(level.getServer(),key->new ArrayDeque<>());
+        if(queue.size()>=MAX_JOBS)return;
+        List<Cell> cells=new ArrayList<>();
+        for(BlockPos pos:dev.jujutsuvfx.core.WorldCutPath.sweptBlocks(from,to,stroke,dev.jujutsuvfx.core.WorldCutPath.WIDTH)){
+            if(!loaded(level,pos)||!CleaveCompatibility.worldBlock(level,pos))continue;
+            BlockState state=level.getBlockState(pos);
+            if(!state.isAir()&&!(state.getBlock() instanceof LiquidBlock)&&state.getDestroySpeed(level,pos)>=0)cells.add(new Cell(pos,state));
+        }
+        if(!cells.isEmpty())queue.addLast(new Job(owner,cells));
+    }
     private static boolean touches(BlockPos pos, Vec3 center, Vec3 normal, double radius) {
         double x = pos.getX() + .5 - center.x, y = pos.getY() + .5 - center.y, z = pos.getZ() + .5 - center.z;
         double dx = Math.max(0, Math.abs(x) - .5), dy = Math.max(0, Math.abs(y) - .5), dz = Math.max(0, Math.abs(z) - .5);

@@ -39,6 +39,7 @@ public final class SorcererCatRenderer<T extends SorcererCat> extends MobRendere
         transformationProp = new ItemStack(name.equals("sukuna_cat") ? VfxItems.SUKUNA_FINGER.get()
                 : name.equals("mahoraga_cat") ? VfxItems.MAHORAGA_WHEEL.get() : VfxItems.GOJO_TEACHER.get());
         addLayer(new DetailsLayer<>(this));
+        addLayer(new CatDanceLayer<>(this,context.getResourceManager(),catTexture,detailsTexture));
         addLayer(new BladeLayer<>(this));
         addLayer(new WheelLayer<>(this));
         addLayer(new AuraLayer<>(this));
@@ -55,6 +56,7 @@ public final class SorcererCatRenderer<T extends SorcererCat> extends MobRendere
 
     @Override public boolean shouldRender(T cat, Frustum frustum, double x, double y, double z) {
         return super.shouldRender(cat, frustum, x, y, z)
+                || cat.danceStyle()!=0&&cat.shouldRender(x,y,z)&&frustum.isVisible(cat.getBoundingBox().inflate(7))
                 || (cat.isTransforming() || cat.hasWheel()) && cat.shouldRender(x, y, z)
                 && frustum.isVisible(cat.getBoundingBox().expandTowards(0, 6.5, 0).inflate(1.5));
     }
@@ -121,7 +123,7 @@ public final class SorcererCatRenderer<T extends SorcererCat> extends MobRendere
         BladeLayer(SorcererCatRenderer<T> parent){super(parent);}
         @Override public void render(PoseStack poses,MultiBufferSource buffers,int light,T cat,
                                      float limbSwing,float limbAmount,float partial,float age,float yaw,float pitch){
-            if(!cat.isMahoraga()||cat.isInvisible()||cat.isTransforming())return;
+            if(cat.danceStyle()!=0||!cat.isMahoraga()||cat.isInvisible()||cat.isTransforming())return;
             poses.pushPose();
             try {
                 if(cat.isBaby()){poses.scale(.5f,.5f,.5f);poses.translate(0,1.5f,0);}
@@ -164,7 +166,7 @@ public final class SorcererCatRenderer<T extends SorcererCat> extends MobRendere
         AuraLayer(SorcererCatRenderer<T> parent) { super(parent); }
         @Override public void render(PoseStack poses, MultiBufferSource buffers, int light, T cat,
                                      float limbSwing, float amount, float partial, float age, float yaw, float pitch) {
-            if (cat.isMahoraga() || cat.isInvisible() || cat.isTransforming() || ClientShrineFocus.silhouette(cat)) return;
+            if (cat.danceStyle()!=0 || cat.isMahoraga() || cat.isInvisible() || cat.isTransforming() || ClientShrineFocus.silhouette(cat)) return;
             if(dev.jujutsuvfx.core.CatCombatMoves.spell(cat.combatMove())){
                 // Spell catalysts follow the animated paw. Ordinary fist presets return after the cast.
                 int hand=cat.punchHand(),move=cat.combatMove();

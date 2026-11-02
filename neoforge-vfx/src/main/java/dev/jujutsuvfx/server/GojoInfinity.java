@@ -26,11 +26,11 @@ public final class GojoInfinity {
     }
     static boolean shrine(DamageSource source) {
         return source.typeHolder().unwrapKey().map(k->k.location().getNamespace().equals(JujutsuVfx.ID)
-                &&k.location().getPath().equals("shrine_cut")).orElse(false);
+                &&(k.location().getPath().equals("shrine_cut")||k.location().getPath().equals("yuta_ladder"))).orElse(false);
     }
     static boolean technique(DamageSource source) {
         return source.typeHolder().unwrapKey().map(k->k.location().getNamespace().equals(JujutsuVfx.ID)
-                &&!k.location().getPath().equals("sorcerer_combo")).orElse(false);
+                &&!k.location().getPath().equals("sorcerer_combo")&&!k.location().getPath().equals("yuta_melee")).orElse(false);
     }
     @SubscribeEvent(priority=EventPriority.HIGH)
     public static void impact(ProjectileImpactEvent event){

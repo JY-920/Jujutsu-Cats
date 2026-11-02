@@ -129,11 +129,17 @@ public final class SukunaSlashHands {
             float side = arm == HumanoidArm.RIGHT ? 1 : -1;
             // Preserve the native equip animation only while this particular item is leaving.
             float equip = VfxItems.isSukunaSlash(player.getItemInHand(event.getHand())) ? 0 : event.getEquipProgress();
+            if(pose!=null&&pose.kind==SukunaSlashItem.Kind.WORLD_CUT){
+                stack.last().pose().set(parent).mul(dev.jujutsuvfx.core.WorldCutHandPose.matrix(pose.age,side));
+                stack.translate(0,-equip*.60f,0);
+                stack.last().normal().set(stack.last().pose()).invert().transpose();
+            }else{
             stack.translate(side * frame.x, frame.y - equip * .60f, frame.z);
             stack.mulPose(Axis.YP.rotationDegrees(side * frame.yaw));
             stack.mulPose(Axis.XP.rotationDegrees(frame.pitch));
             stack.mulPose(Axis.ZP.rotationDegrees(side * frame.roll));
             FirstPersonArmSpace.apply(stack, arm);
+            }
             float weight=pose==null?0:pose.kind!=SukunaSlashItem.Kind.CLEAVE
                     ?smooth(pose.age/.12f)*(1-smooth((pose.age-.65f)/.35f))
                     :smooth((pose.chargeAge+(pose.released?pose.age:0))/.14f)*(1-pose.release);
@@ -164,6 +170,11 @@ public final class SukunaSlashHands {
         float pitch = heavy ? mix(-2.94f, -1.13f, cut) : mix(-1.42f, -1.61f, cut);
         float yaw = heavy ? mix(-side * .09f, side * .12f, cut) : mix(-side * .80f, side * .78f, cut);
         float roll = heavy ? mix(-side * .12f, side * .10f, cut) : mix(-side * .25f, side * .16f, cut);
+        if(pose.kind==SukunaSlashItem.Kind.WORLD_CUT){
+            float outward=smooth((pose.age-.24f)/.07f);
+            pitch=mix(-1.25f,-1.48f,outward);yaw=mix(-side*1.18f,side*1.12f,outward);
+            roll=mix(-side*.55f,side*.50f,outward);
+        }
         blend(part, pitch + headPitch * .72f, yaw + headYaw * .75f, roll, weight);
     }
 

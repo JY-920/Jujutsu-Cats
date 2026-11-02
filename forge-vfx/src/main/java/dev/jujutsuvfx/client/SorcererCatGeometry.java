@@ -46,7 +46,7 @@ final class SorcererCatGeometry {
             Map<String, Track> animation = new HashMap<>();
             float clipDuration = 0;
             // Only the supplied animated clip is imported; no expressions or effect scripts run.
-            for (var entry : json.getAsJsonArray("animations")) {
+            for (var entry : name.equals("yuta_cat") ? new JsonArray() : json.getAsJsonArray("animations")) {
                 JsonObject clip = entry.getAsJsonObject();
                 if (clipName != null && !clipName.equals(clip.get("name").getAsString())) continue;
                 for (var animator : clip.getAsJsonObject("animators").entrySet()) {
@@ -90,9 +90,9 @@ final class SorcererCatGeometry {
     }
 
     void render(PoseStack poses, VertexConsumer vertices, int light, int overlay, int color,
-                int texture, SorcererCatModel<?> model, float progress) {
+                int texture, CatGeometryPose model, float progress) {
         for (Node root : roots) renderNode(root, ROOT, poses, vertices, light, overlay, color,
-                texture, model, Mth.clamp(progress, 0, 1) * duration);
+                texture, model, Mth.clamp(progress, 0, 1) * duration, null);
     }
 
     /** Authored wheel only, centered on its rotation pivot for the narrative insert shot. */
@@ -106,7 +106,7 @@ final class SorcererCatGeometry {
     }
 
     private static void renderNode(Node node, Vector3f parent, PoseStack poses, VertexConsumer vertices,
-                                   int light, int overlay, int color, int texture, SorcererCatModel<?> model, float time) {
+                                   int light, int overlay, int color, int texture, CatGeometryPose model, float time, BendSpace bending) {
         if ((node.materials & (1 << texture)) == 0) return;
         if (node.blindfold && model!=null && model.hideBlindfold()) return;
         poses.pushPose();
@@ -139,34 +139,81 @@ final class SorcererCatGeometry {
                     poses.scale(scale.x, scale.y, scale.z);
                 }
             }
+            if (model != null) model.detailPose(poses,node.name);
+            if (vanilla != null && model.meshBend(node.name) != null)
+                bending=new BendSpace(model.meshBend(node.name),poses.last());
             if (node.hand != 0 && model!=null) {
-                if (model.handUnavailable(node.hand)) {
-                    drawFaces(node.upperArm, poses.last(), vertices, texture, light, overlay, color);
-                } else if (Math.abs(model.elbow(node.hand)) > .0001f) {
-                    drawFaces(node.upperArm, poses.last(), vertices, texture, light, overlay, color);
+                if (model.smoothArms() && !model.handUnavailable(node.hand)) {
+                    drawFaces(node.faces, poses.last(), vertices, texture, light, overlay, color, bending);
+                } else if (model.handUnavailable(node.hand)) {
+                    drawFaces(node.upperArm, poses.last(), vertices, texture, light, overlay, color, bending);
+                } else if (Math.abs(model.elbow(node.hand)) > .0001f || Math.abs(model.palmTwist(node.hand)) > .0001f) {
+                    drawFaces(node.upperArm, poses.last(), vertices, texture, light, overlay, color, bending);
                     poses.pushPose();
                     try {
                         poses.translate(node.elbowPivot.x, node.elbowPivot.y, node.elbowPivot.z);
                         poses.mulPose(Axis.XP.rotation(model.elbow(node.hand)));
+                        poses.mulPose(Axis.YP.rotation(model.palmTwist(node.hand)));
                         poses.translate(-node.elbowPivot.x, -node.elbowPivot.y, -node.elbowPivot.z);
-                        drawFaces(node.forearm, poses.last(), vertices, texture, light, overlay, color);
+                        drawFaces(node.forearm, poses.last(), vertices, texture, light, overlay, color, bending);
                     } finally { poses.popPose(); }
-                } else drawFaces(node.faces, poses.last(), vertices, texture, light, overlay, color);
+                } else drawFaces(node.faces, poses.last(), vertices, texture, light, overlay, color, bending);
             } else {
-                drawFaces(node.faces, poses.last(), vertices, texture, light, overlay, color);
+                drawFaces(node.faces, poses.last(), vertices, texture, light, overlay, color, bending);
             }
             for (Node child : node.children)
-                renderNode(child, node.origin, poses, vertices, light, overlay, color, texture, model, time);
+                renderNode(child, node.origin, poses, vertices, light, overlay, color, texture, model, time, bending);
         } finally { poses.popPose(); }
     }
 
     private static void drawFaces(List<Quad> faces, PoseStack.Pose pose, VertexConsumer vertices,
-                                  int texture, int light, int overlay, int color) {
+                                  int texture, int light, int overlay, int color, BendSpace bending) {
+        if(bending!=null){bending.draw(faces,pose,vertices,texture,light,overlay,color);return;}
         for (Quad quad : faces) {
             if (quad.texture != texture) continue;
             for (Vertex v : quad.vertices)
                 vertices.vertex(pose.pose(), v.x, v.y, v.z).color(color).uv(v.u, v.v)
                         .overlayCoords(overlay).uv2(light).normal(pose.normal(), quad.normal.x, quad.normal.y, quad.normal.z).endVertex();
+        }
+    }
+
+
+    /** Only opted-in bones are subdivided; ordinary cats retain their original mesh and cost. */
+    private static final class BendSpace {
+        final CatMeshBend bend;
+        final org.joml.Matrix4f world,inverse;
+        final org.joml.Matrix3f normals,inverseNormals;
+        BendSpace(CatMeshBend bend,PoseStack.Pose pose){
+            this.bend=bend;world=new org.joml.Matrix4f(pose.pose());inverse=new org.joml.Matrix4f(world).invert();
+            normals=new org.joml.Matrix3f(pose.normal());inverseNormals=new org.joml.Matrix3f(normals).invert();
+        }
+        void draw(List<Quad> faces,PoseStack.Pose pose,VertexConsumer output,int texture,int light,int overlay,int color){
+            var local=new org.joml.Matrix4f(inverse).mul(pose.pose());
+            var localNormal=new org.joml.Matrix3f(inverseNormals).mul(pose.normal());
+            for(Quad face:faces){
+                if(face.texture!=texture)continue;
+                Vector3f[] p=new Vector3f[4];
+                for(int i=0;i<4;i++){Vertex v=face.vertices[i];p[i]=local.transformPosition(new Vector3f(v.x,v.y,v.z));}
+                Vector3f normal=localNormal.transform(new Vector3f(face.normal)).normalize();
+                int nu=segments(Math.max(Math.abs(p[1].y-p[0].y),Math.abs(p[2].y-p[3].y)));
+                int nv=segments(Math.max(Math.abs(p[3].y-p[0].y),Math.abs(p[2].y-p[1].y)));
+                for(int j=0;j<nv;j++)for(int i=0;i<nu;i++){
+                    emit(output,face,p,normal,(float)i/nu,(float)j/nv,light,overlay,color);
+                    emit(output,face,p,normal,(float)(i+1)/nu,(float)j/nv,light,overlay,color);
+                    emit(output,face,p,normal,(float)(i+1)/nu,(float)(j+1)/nv,light,overlay,color);
+                    emit(output,face,p,normal,(float)i/nu,(float)(j+1)/nv,light,overlay,color);
+                }
+            }
+        }
+        private static int segments(float span){return Math.max(1,Math.min(12,(int)Math.ceil(span*16/1.5-1e-4)));}
+        private void emit(VertexConsumer output,Quad face,Vector3f[] p,Vector3f normal,float u,float v,int light,int overlay,int color){
+            float a=(1-u)*(1-v),b=u*(1-v),c=u*v,d=(1-u)*v;
+            Vector3f point=new Vector3f(p[0]).mul(a).fma(b,p[1]).fma(c,p[2]).fma(d,p[3]);
+            Vector3f n=bend.normal(new Vector3f(normal),point.y,point.z);
+            bend.position(point);world.transformPosition(point);normals.transform(n).normalize();
+            float tu=a*face.vertices[0].u+b*face.vertices[1].u+c*face.vertices[2].u+d*face.vertices[3].u;
+            float tv=a*face.vertices[0].v+b*face.vertices[1].v+c*face.vertices[2].v+d*face.vertices[3].v;
+            output.vertex(point.x,point.y,point.z).color(color).uv(tu,tv).overlayCoords(overlay).uv2(light).normal(n.x,n.y,n.z).endVertex();
         }
     }
 
@@ -191,6 +238,8 @@ final class SorcererCatGeometry {
             case "right_front_leg" -> SorcererCat.LEFT;
             default -> 0;
         };
+        if (bone && data.get("name").getAsString().equals("left_front_leg")) inheritedHand=SorcererCat.RIGHT;
+        if (bone && data.get("name").getAsString().equals("right_front_leg")) inheritedHand=SorcererCat.LEFT;
         List<Node> children = new ArrayList<>();
         List<Quad> faces = new ArrayList<>();
         List<Quad> upperArm = new ArrayList<>(), forearm = new ArrayList<>();

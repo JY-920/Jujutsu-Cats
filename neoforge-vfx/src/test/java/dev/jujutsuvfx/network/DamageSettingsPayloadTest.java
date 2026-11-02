@@ -5,14 +5,15 @@ import java.util.Arrays;
 public final class DamageSettingsPayloadTest {
     public static void main(String[] args) {
         assertEquals(DamageSettingsRequest.COUNT, dev.jujutsuvfx.core.TechniqueDamage.values().length);
+        assertEquals(13, DamageSettingsRequest.COUNT);
         requestHasFixedSizeAndOwnsItsValues();
         replyCannotBeChangedByClientDraftEdits();
         validatesEveryValueBeforeSaving();
         System.out.println("Damage settings payload checks passed");
     }
     private static void validatesEveryValueBeforeSaving() {
-        int[] values = new int[10];
-        values[9] = 1000;
+        int[] values = new int[DamageSettingsRequest.COUNT];
+        values[values.length - 1] = 1000;
         if (!DamageSettingsRequest.validValues(values)) throw new AssertionError("0 and 1000 must be accepted");
         for (int i = 0; i < values.length; i++) {
             int before = values[i];
@@ -22,30 +23,30 @@ public final class DamageSettingsPayloadTest {
             if (DamageSettingsRequest.validValues(values)) throw new AssertionError("Excessive percentage accepted at " + i);
             values[i] = before;
         }
-        if (DamageSettingsRequest.validValues(null) || DamageSettingsRequest.validValues(new int[9]))
+        if (DamageSettingsRequest.validValues(null) || DamageSettingsRequest.validValues(new int[DamageSettingsRequest.COUNT - 1]))
             throw new AssertionError("Wrong-sized settings accepted");
     }
     private static void requestHasFixedSizeAndOwnsItsValues() {
-        int[] values = new int[10];
+        int[] values = new int[DamageSettingsRequest.COUNT];
         Arrays.fill(values, 100);
         var request = new DamageSettingsRequest(7, true, values);
         values[0] = 900;
         request.percents()[1] = 800;
         assertEquals(100, request.percents()[0]);
         assertEquals(100, request.percents()[1]);
-        rejects(() -> new DamageSettingsRequest(7, true, new int[11]));
+        rejects(() -> new DamageSettingsRequest(7, true, new int[DamageSettingsRequest.COUNT + 1]));
         rejects(() -> new DamageSettingsRequest(7, true, new int[0]));
     }
 
     private static void replyCannotBeChangedByClientDraftEdits() {
-        int[] values = new int[10];
+        int[] values = new int[DamageSettingsRequest.COUNT];
         Arrays.fill(values, 100);
         var state = new DamageSettingsState(7, DamageSettingsState.SAVED, true, values);
         values[0] = 0;
         state.percents()[1] = 0;
         assertEquals(100, state.percents()[0]);
         assertEquals(100, state.percents()[1]);
-        rejects(() -> new DamageSettingsState(7, 0, true, new int[9]));
+        rejects(() -> new DamageSettingsState(7, 0, true, new int[DamageSettingsRequest.COUNT - 1]));
     }
     private static void assertEquals(int expected, int actual) {
         if (expected != actual) throw new AssertionError("Expected " + expected + ", got " + actual);

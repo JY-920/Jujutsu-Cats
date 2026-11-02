@@ -494,7 +494,7 @@ public final class SorcererCatCombat {
         if(cat.isMahoraga())reach+=blade(action)?1.05:.65;
         return cat.distanceToSqr(target) <= reach * reach;
     }
-    public boolean threatens(SorcererCat target) {
+    public boolean threatens(LivingEntity target) {
         return !DomainFreeze.hold(cat) && opponent != null && opponent.equals(target.getUUID()) && melee(move) && (move == RAPID || !contacted) && frame >= 1;
     }
     public boolean guarding() { return defense(move) && frame >= 2; }

@@ -26,7 +26,8 @@ final class SukunaCleaveDamage {
         double range=Math.min(192,radius*Math.max(1,scale));int count=0;boolean hit=false;
         for(LivingEntity target:level.getEntitiesOfClass(LivingEntity.class,new AABB(center,center).inflate(range),e->
                 TechniquePlayerRules.canAffect(owner,e)
-                        &&(!(owner instanceof SorcererCat cat)||cat.canFight(e)))) {
+                        &&(!(owner instanceof SorcererCat cat)||cat.canFight(e))
+                        &&(!(owner instanceof dev.jujutsuvfx.entity.YutaCat yuta)||yuta.canFight(e)))) {
             if(count++>=48)break;
             AABB box=target.getBoundingBox();
             if(!contact(box,center,normal,radius)&&(second==null||!contact(box,center,second,radius*scale)))continue;

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 /** Observer-only hand timeline; release is an age in ticks, -1 while held, -2 for cancellation. */
 public record SkillGesture(int actor,UUID owner,int session,int kind,int hand,int age,int release) implements CustomPacketPayload {
-    public static final int BLUE=0,FURNACE=1,VOID=2,SHRINE=3,RETURN_TICKS=12;
+    public static final int BLUE=0,FURNACE=1,VOID=2,SHRINE=3,SPEECH=4,YUTA=5,UZUMAKI=6,LOVE_BEAM=7,RETURN_TICKS=12;
     public static final Type<SkillGesture> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(JujutsuVfx.ID,"skill_gesture_v1"));
     public static final StreamCodec<RegistryFriendlyByteBuf,SkillGesture> CODEC=StreamCodec.of((b,p)->{
         b.writeVarInt(p.actor);b.writeUUID(p.owner);b.writeInt(p.session);b.writeByte(p.kind);b.writeByte(p.hand);b.writeVarInt(p.age);b.writeInt(p.release);

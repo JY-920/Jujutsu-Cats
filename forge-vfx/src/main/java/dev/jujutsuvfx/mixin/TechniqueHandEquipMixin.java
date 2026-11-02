@@ -22,6 +22,6 @@ abstract class TechniqueHandEquipMixin {
         // already animate from the empty-hand pose, so that reset pulls the wrist offscreen
         // just as the casting blend begins. Leave the existing height/interpolation intact;
         // ItemInHandRenderer.tick still animates real hotbar and offhand item changes.
-        if (item instanceof SkillItem || item instanceof SukunaSlashItem) ci.cancel();
+        if (item instanceof SkillItem || item instanceof SukunaSlashItem || item instanceof dev.jujutsuvfx.item.YutaDomainItem || item instanceof dev.jujutsuvfx.item.MaximumUzumakiItem) ci.cancel();
     }
 }

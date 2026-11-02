@@ -12,6 +12,7 @@ void vfxMaterialMain() {
     vec4 inside = texture(Silhouette, texCoord);
     // The body interior is never shaded by this effect, even at overlapping skin faces.
     if (inside.r > 0.03) discard;
+    // The same posed-model silhouette drives purple energy without tinting internal faces.
     float nearest = 100.0;
     vec4 payload = vec4(0.0);
     float closeEdge = 0.0, middleEdge = 0.0, farEdge = 0.0;
@@ -40,8 +41,9 @@ void vfxMaterialMain() {
     }
     if (payload.g < 0.01) discard;
     float width = clamp(payload.b * 2.0, 0.5, 1.5);
-    float healing = step(0.5, payload.a);
-    float seed = clamp((payload.a - healing * 0.55) / 0.4, 0.0, 1.0);
+    float purple = step(0.65, payload.a);
+    float healing = step(0.30, payload.a) * (1.0-purple);
+    float seed = clamp((payload.a - purple*.68 - healing*.34) / .24, 0.0, 1.0);
     // Low-frequency breathing in the outer glow, with a steady clean white/green rim.
     float breath = 0.88 + 0.12 * sin(Time * 3.2 + seed * 6.283185);
     float core = closeEdge * 0.80;
@@ -51,7 +53,10 @@ void vfxMaterialMain() {
     if (alpha < 0.008) discard;
     vec3 white = mix(vec3(0.75, 0.88, 1.0), vec3(1.0), closeEdge);
     vec3 green = mix(vec3(0.06, 0.82, 0.20), vec3(0.67, 1.0, 0.77), closeEdge);
-    fragColor = vec4(mix(white, green, healing), clamp(alpha, 0.0, 0.94));
+    float flow=.65+.35*sin(texCoord.y*MaskSize.y*.27-Time*9.0+sin(texCoord.x*MaskSize.x*.19+Time*3.0)*2.0+seed*17.0);
+    vec3 violet=mix(vec3(.35,.035,.95),vec3(.88,.65,1.0),closeEdge*.8+flow*.15);
+    alpha*=mix(1.0,.72+flow*.55,purple);
+    fragColor = vec4(mix(mix(white, green, healing),violet,purple), clamp(alpha, 0.0, 0.94));
 }
 
 // Never allow an invalid material sample to cover the game image.

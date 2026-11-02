@@ -18,7 +18,7 @@ public final class DomainDurationSettings {
             send(player, packet.requestId(), DomainSettingsState.DENIED); return;
         }
         if (!packet.validValues()) { send(player, packet.requestId(), DomainSettingsState.INVALID); return; }
-        try { VfxConfig.domainSeconds(packet.voidSeconds(), packet.shrineSeconds()); }
+        try { VfxConfig.domainSeconds(packet.voidSeconds(), packet.shrineSeconds(), packet.yutaSeconds()); }
         catch (RuntimeException failure) {
             LogUtils.getLogger().error("Could not save domain durations", failure);
             send(player, packet.requestId(), DomainSettingsState.FAILED); return;
@@ -30,6 +30,6 @@ public final class DomainDurationSettings {
     private static void send(ServerPlayer player, int requestId, int result) {
         if (PacketDistributor.hasChannel(player.connection, DomainSettingsState.TYPE))
             PacketDistributor.sendToPlayer(player, new DomainSettingsState(requestId, result,
-                    player.hasPermissions(2) && VfxConfig.SERVER.isLoaded(), VfxConfig.voidSeconds(), VfxConfig.shrineSeconds()));
+                    player.hasPermissions(2) && VfxConfig.SERVER.isLoaded(), VfxConfig.voidSeconds(), VfxConfig.shrineSeconds(), VfxConfig.yutaSeconds()));
     }
 }

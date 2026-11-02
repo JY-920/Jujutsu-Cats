@@ -8,10 +8,28 @@ public final class PlayfulCloudMesh {
     public record Vertex(float x,float y,float z,float nx,float ny,float nz,float u,float v,int rgb) {}
     public record Quad(Vertex a,Vertex b,Vertex c,Vertex d) {}
     public static final List<Quad> ROD = rod();
-    public static final List<Quad> LINK = link();
+    public static final List<Quad> LINK = chain();
     private static final int SIDES=12;
     private PlayfulCloudMesh() {}
 
+    /** Three oval steel rings, alternating their planes, spanning one simulated socket. */
+    private static List<Quad> chain() {
+        List<Quad> out=new ArrayList<>();
+        for(int link=0;link<3;link++)for(int segment=0;segment<16;segment++)for(int side=0;side<6;side++) {
+            Vertex[] v=new Vertex[4];int n=0;
+            for(int[] corner:new int[][]{{0,0},{1,0},{1,1},{0,1}}){
+                double a=(segment+corner[0])*Math.PI*2/16,b=(side+corner[1])*Math.PI*2/6;
+                double center=.022+link*.043,wire=.007;
+                double x=(.020+wire*Math.cos(b))*Math.cos(a),y=center+(.022+wire*Math.cos(b))*Math.sin(a),z=wire*Math.sin(b);
+                double nx=Math.cos(a)*Math.cos(b),ny=Math.sin(a)*Math.cos(b),nz=Math.sin(b);
+                if(link%2==1){double swap=x;x=z;z=swap;swap=nx;nx=nz;nz=swap;}
+                int color=side<3?0xDAD4DF:0x5E5867;
+                v[n++]=new Vertex((float)x,(float)y,(float)z,(float)nx,(float)ny,(float)nz,.5f,.5f,color);
+            }
+            out.add(new Quad(v[0],v[1],v[2],v[3]));
+        }
+        return List.copyOf(out);
+    }
     private static List<Quad> rod() {
         List<Quad> out=new ArrayList<>();
         // Carmine lacquer, recessed iron collars and bevelled silver end plates.
@@ -37,22 +55,6 @@ public final class PlayfulCloudMesh {
         // Two restrained metallic grooves at each socket read clearly at a distance.
         for(float y:new float[]{.045f,.064f,.875f,.894f})cylinder(out,y,y+.004f,.056f,.056f,0x9D929F);
         return List.copyOf(out);
-    }
-    private static List<Quad> link() {
-        List<Quad> out=new ArrayList<>();
-        // Oval link: alternated by 90 degrees by the joint rig, leaving a real open centre.
-        int major=12,minor=4;
-        for(int i=0;i<major;i++)for(int j=0;j<minor;j++) {
-            out.add(new Quad(torus(i,j),torus(i+1,j),torus(i+1,j+1),torus(i,j+1)));
-        }
-        return List.copyOf(out);
-    }
-    private static Vertex torus(int i,int j) {
-        double a=i*2*Math.PI/12,b=j*2*Math.PI/4;
-        float nx=(float)(Math.cos(a)*Math.cos(b)),ny=(float)(Math.sin(a)*Math.cos(b)),nz=(float)Math.sin(b);
-        int color=j%4==0?0xDDDCE5:j%4==2?0x777887:0xB4B3C2;
-        return new Vertex((float)Math.cos(a)*.032f+nx*.0085f,(float)Math.sin(a)*.048f+ny*.0085f,
-                nz*.0085f,nx,ny,nz,0.5f,0.5f,color);
     }
     private static void cylinder(List<Quad> out,float lo,float hi,float r0,float r1,int color) {
         for(int i=0;i<SIDES;i++) {

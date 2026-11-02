@@ -14,8 +14,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public final class PacketDistributor {
-    // This envelope has no per-payload negotiation: older peers cannot decode damage settings.
-    private static final String VERSION="1026-forge-1";
+    // No per-payload negotiation: reject older peers before sending Uzumaki or v3 damage settings.
+    private static final String VERSION="1130-forge-1";
     private static final SimpleChannel CHANNEL=NetworkRegistry.newSimpleChannel(new ResourceLocation(JujutsuVfx.ID,"spells"),
             ()->VERSION,VERSION::equals,VERSION::equals);
     private record ServerPacket(CustomPacketPayload payload) {}

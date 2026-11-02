@@ -233,7 +233,11 @@ final class ShrineBlades {
             cut.hit.add(target.getUUID());
             CutCadence cadence=targets.get(target.getUUID());if(cadence!=null)cadence.contacted();
             if(target.getUUID().equals(cut.intended))cut.releaseReservation();
-            float damage=target instanceof dev.jujutsuvfx.entity.SorcererCat cat&&cat.isGojo()?6f
+            // Give Yuta the same per-contact budget as Gojo during Sukuna's cinematic domain.
+            boolean protectedYuta=kind==DomainVolume.SHRINE&&dev.jujutsuvfx.config.VfxConfig.cinematic()
+                    &&owner instanceof dev.jujutsuvfx.entity.SorcererCat caster&&caster.isSukuna()
+                    &&target instanceof dev.jujutsuvfx.entity.YutaCat;
+            float damage=(target instanceof dev.jujutsuvfx.entity.SorcererCat cat&&cat.isGojo())||protectedYuta?6f
                     :focused!=null?FOCUSED_DAMAGE:DomainControl.SLASH_DAMAGE;
             if(TechniqueDamageRules.hurt(target,source,damage,TechniqueDamage.SHRINE)&&active.getAsBoolean()){
                 target.setDeltaMovement(Vec3.ZERO);

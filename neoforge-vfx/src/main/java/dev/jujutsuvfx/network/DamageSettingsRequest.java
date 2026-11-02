@@ -8,13 +8,13 @@ import net.minecraft.resources.ResourceLocation;
 
 /** Fixed-size wire format: clients cannot request allocation from an untrusted array length. */
 public record DamageSettingsRequest(int requestId, boolean update, int[] percents) implements CustomPacketPayload {
-    public static final int COUNT = 10;
-    public static final Type<DamageSettingsRequest> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(JujutsuVfx.ID, "damage_settings_request_v1"));
+    public static final int COUNT = 13;
+    public static final Type<DamageSettingsRequest> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(JujutsuVfx.ID, "damage_settings_request_v4"));
     public static final StreamCodec<RegistryFriendlyByteBuf, DamageSettingsRequest> CODEC = StreamCodec.of(
             (b,p) -> { b.writeVarInt(p.requestId); b.writeBoolean(p.update); for (int value : p.percents) b.writeVarInt(value); },
             b -> new DamageSettingsRequest(b.readVarInt(), b.readBoolean(), readValues(b)));
     public DamageSettingsRequest {
-        if (percents == null || percents.length != COUNT) throw new IllegalArgumentException("Expected ten technique percentages");
+        if (percents == null || percents.length != COUNT) throw new IllegalArgumentException("Expected thirteen technique percentages");
         percents = percents.clone();
     }
     @Override public int[] percents() { return percents.clone(); }

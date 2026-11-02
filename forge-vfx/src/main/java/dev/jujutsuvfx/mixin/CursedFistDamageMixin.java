@@ -16,6 +16,6 @@ abstract class CursedFistDamageMixin {
     private boolean jujutsu$chargedContact(Entity target, DamageSource source, float damage) {
         Player player = (Player) (Object) this;
         float amount = FistCombo.empoweredHit(player, target, source) ? damage * 2 : damage;
-        return target.hurt(source, amount);
+        return target.hurt(source, amount + dev.jujutsuvfx.server.YutaKatanaCombat.bonus(player));
     }
 }

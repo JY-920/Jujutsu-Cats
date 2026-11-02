@@ -302,8 +302,7 @@ public final class UnlimitedPurpleBlast {
     }
 
     private static boolean eligible(LivingEntity target) {
-        return target.isAlive() && !target.isRemoved() && !target.isSpectator()
-                && !target.isPassenger() && !target.isVehicle();
+        return target.isAlive() && !target.isRemoved() && !target.isSpectator();
     }
 
     private static Vec3 nearest(Vec3 point, AABB box) {

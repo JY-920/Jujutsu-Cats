@@ -85,9 +85,9 @@ public final class PlayfulCloudCombat {
             var block=p.level().clip(new ClipContext(start,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,p));
             double reachSqr=Math.min(4.2*4.2,start.distanceToSqr(block.getLocation()));
             var hit=ProjectileUtil.getEntityHitResult(p,start,end,p.getBoundingBox().expandTowards(look.scale(4.2)).inflate(.65),
-                    e->e instanceof LivingEntity l&&l.isAlive()&&l.isPickable()&&!l.isSpectator()&&!p.isAlliedTo(l),reachSqr);
+                    e->e instanceof LivingEntity l&&l.isPickable()&&TechniquePlayerRules.canAffect(p,l),reachSqr);
             if(hit==null||!(hit.getEntity() instanceof LivingEntity victim))continue;
-            if(victim instanceof Player other&&!p.canHarmPlayer(other))continue;
+            if(!TechniquePlayerRules.canAffect(p,victim))continue;
             float damage=(float)p.getAttributeValue(Attributes.ATTACK_DAMAGE)*(1.15f+.55f*s.power);
             p.resetAttackStrengthTicker();
             if(victim.hurt(p.damageSources().playerAttack(p),damage)) {

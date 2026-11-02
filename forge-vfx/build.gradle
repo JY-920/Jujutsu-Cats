@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'net.minecraftforge.gradle' version '6.0.54'
 }
-version = '0.102.6-forge-1.20.1'
+version = '0.113.12-forge-1.20.1'
 group = 'dev.jujutsuvfx'
 base { archivesName = 'jujutsu-vfx' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -124,3 +124,288 @@ tasks.register("verifyWorldCutPath", JavaExec) {
     mainClass = "dev.jujutsuvfx.core.WorldCutPathTest"
 }
 tasks.named("check") { dependsOn "verifyWorldCutPath" }
+
+
+tasks.register("verifyYutaBlade", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.YutaBladeMotionTest"
+}
+tasks.named("check") { dependsOn "verifyYutaBlade" }
+
+
+tasks.register("verifyYutaModel", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.client.YutaModelGeometryTest"
+}
+tasks.named("check") { dependsOn "verifyYutaModel" }
+
+
+tasks.register("verifyYutaClock", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.YutaActionClockTest"
+}
+tasks.named("check") { dependsOn "verifyYutaClock" }
+
+
+tasks.register("verifyYutaMobility", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.YutaMobilityTest"
+}
+tasks.named("check") { dependsOn "verifyYutaMobility" }
+
+
+tasks.register("verifyCursedSpeech", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.CursedSpeechTest"
+}
+tasks.named("check") { dependsOn "verifyCursedSpeech" }
+
+// Verify Yuta domain milestones and pulse cadence.
+tasks.register("verifyYutaDomain", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.YutaDomainTest"
+}
+tasks.named("check") { dependsOn "verifyYutaDomain" }
+
+tasks.register("verifyYutaShaderUniforms", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.client.YutaShaderUniformTest"
+}
+tasks.named("check") { dependsOn "verifyYutaShaderUniforms" }
+
+tasks.register("verifyYutaImportedModel", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.client.YutaImportedModelTest"
+}
+tasks.named("check") { dependsOn "verifyYutaImportedModel" }
+
+tasks.register("verifyYutaCombatRules", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaCombatRulesTest"
+}
+tasks.named("check") { dependsOn "verifyYutaCombatRules" }
+tasks.register("verifyYutaDuelWiring", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaDuelWiringTest"
+}
+tasks.named("check") { dependsOn "verifyYutaDuelWiring" }
+
+tasks.register("verifyYutaDance", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaDanceTest"
+}
+tasks.named("check") { dependsOn "verifyYutaDance" }
+
+tasks.register("verifyYutaDanceModel", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.YutaDanceModelTest"
+}
+tasks.named("check") { dependsOn "verifyYutaDanceModel" }
+
+tasks.register("verifyCatMeshBend", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.CatMeshBendTest"
+}
+tasks.named("check") { dependsOn "verifyCatMeshBend" }
+
+tasks.register("verifyPlayerDanceModel", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.PlayerDanceModelTest"
+}
+tasks.named("check") { dependsOn "verifyPlayerDanceModel" }
+
+tasks.register("verifyYutaDebugControl", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaDebugControlTest"
+}
+tasks.named("check") { dependsOn "verifyYutaDebugControl" }
+
+tasks.register("verifyYutaCopiedDeck", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaCopiedDeckTest"
+}
+tasks.named("check") { dependsOn "verifyYutaCopiedDeck" }
+
+tasks.register("verifyPlayfulCloudPhysics", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.PlayfulCloudPhysicsTest"
+}
+tasks.named("check") { dependsOn "verifyPlayfulCloudPhysics" }
+
+tasks.register("verifyYutaKatana", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaKatanaTest"
+}
+tasks.named("check") { dependsOn "verifyYutaKatana" }
+
+tasks.register("verifyYutaKatanaModel", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.YutaKatanaModelTest"
+}
+tasks.named("check") { dependsOn "verifyYutaKatanaModel" }
+
+tasks.register("verifyRikaSupport", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.RikaSupportTest"
+}
+tasks.named("check") { dependsOn "verifyRikaSupport" }
+
+tasks.register("verifyRikaCombatModel", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.client.RikaCombatModelTest"
+}
+tasks.named("check") { dependsOn "verifyRikaCombatModel" }
+
+tasks.register("verifyShuffleDance", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.ShuffleDanceTest"
+}
+tasks.named("check") { dependsOn "verifyShuffleDance" }
+
+tasks.register("verifyAllCatDances", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.AllCatDanceModelTest"
+}
+tasks.named("check") { dependsOn "verifyAllCatDances" }
+
+tasks.register("verifyLivingDance", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.LivingDanceModelTest"
+}
+tasks.named("check") { dependsOn "verifyLivingDance" }
+
+tasks.register("verifyShuffleReference", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.ShuffleReferenceModelTest"
+}
+tasks.named("check") { dependsOn "verifyShuffleReference" }
+
+tasks.register("verifyNativeDanceRig", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.NativeDanceRigTest"
+}
+tasks.named("check") { dependsOn "verifyNativeDanceRig" }
+
+tasks.register("verifySpiritRules", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.SpiritRulesTest"
+}
+tasks.named("check") { dependsOn "verifySpiritRules" }
+
+tasks.register("verifyGetoModel", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.GetoImportedModelTest"
+}
+tasks.named("check") { dependsOn "verifyGetoModel" }
+
+tasks.register("verifyGetoCombat", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.GetoCombatTest"
+}
+tasks.named("check") { dependsOn "verifyGetoCombat" }
+
+tasks.register("verifyYutaCinematicFraming", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaCinematicFramingTest"
+}
+tasks.named("check") { dependsOn "verifyYutaCinematicFraming" }
+
+tasks.register("verifyYutaArea", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaAreaMotionTest"
+}
+tasks.named("check") { dependsOn "verifyYutaArea" }
+
+tasks.register("verifyRangedCats", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.RangedCatRulesTest"
+}
+tasks.named("check") { dependsOn "verifyRangedCats" }
+
+tasks.register("verifyYutaGetoBeat", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaGetoBeatTest"
+}
+tasks.named("check") { dependsOn "verifyYutaGetoBeat" }
+
+tasks.register("verifyYutaFinaleAudio", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.YutaFinaleAudioTest"
+}
+tasks.named("check") { dependsOn "verifyYutaFinaleAudio" }
+
+tasks.register("verifyYutaGetoPoseModel", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.YutaGetoPoseModelTest"
+}
+tasks.named("check") { dependsOn "verifyYutaGetoPoseModel" }
+
+tasks.register("verifyRikaFinaleModel", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.RikaFinaleModelTest"
+}
+tasks.named("check") { dependsOn "verifyRikaFinaleModel" }
+
+tasks.register("verifyYutaGetoFinaleGeometry", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.client.YutaGetoFinaleGeometryTest"
+}
+tasks.named("check") { dependsOn "verifyYutaGetoFinaleGeometry" }
+
+tasks.register("verifyChimeraAnatomy", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.ChimeraAnatomyTest"
+}
+tasks.named("check") { dependsOn "verifyChimeraAnatomy" }
+
+tasks.register("verifySustainedBeam", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.SustainedBeamTest"
+}
+tasks.named("check") { dependsOn "verifySustainedBeam" }
+
+tasks.register("verifyPlayerBeamLook", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.client.PlayerBeamLookTest"
+}
+tasks.named("check") { dependsOn "verifyPlayerBeamLook" }

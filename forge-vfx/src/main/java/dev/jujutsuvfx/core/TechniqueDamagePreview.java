@@ -27,6 +27,9 @@ public final class TechniqueDamagePreview {
             case FURNACE -> new Range(60,200);
             // Ordinary targets: focused / normal slash. Gojo's special 6-point basis is shown separately.
             case SHRINE -> new Range(20,50);
+            case YUTA_DOMAIN -> new Range(24,24);
+            case UZUMAKI -> catCaster?new Range(90,90):new Range(30,30);
+            case LOVE_BEAM -> new Range(30,30);
         };
         float low=raw.min(),high=raw.max();
         if(playerTarget&&technique!=TechniqueDamage.PURPLE_UNLIMITED) {
@@ -38,6 +41,7 @@ public final class TechniqueDamagePreview {
         return new Range(DamageScaling.scaled(low,percent/100f),DamageScaling.scaled(high,percent/100f));
     }
     private static float playerBalanced(TechniqueDamage technique,float raw,boolean cat) {
+        if(technique==TechniqueDamage.YUTA_DOMAIN)return Math.min(6f,raw*.25f);
         if(!cat)return technique==TechniqueDamage.SHRINE?Math.min(.5f,raw*.025f):Math.min(6f,raw*.08f);
         return switch(technique) {
             case BLUE -> Math.min(6f,raw*.8f);
@@ -47,6 +51,8 @@ public final class TechniqueDamagePreview {
             case FURNACE -> Math.min(24f,raw*.12f);
             case SHRINE -> Math.min(6f,raw*.2f);
             case PURPLE_UNLIMITED -> raw;
+            case YUTA_DOMAIN -> Math.min(6f,raw*.25f);
+            case UZUMAKI,LOVE_BEAM -> 14f;
         };
     }
 }

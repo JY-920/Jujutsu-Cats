@@ -39,17 +39,15 @@ import static dev.jujutsuvfx.core.CatSpell.*;
 public final class CatSorcery {
     private static final Map<MinecraftServer, State> STATES=new WeakHashMap<>();
     private static final class Rhythm {
-        long skillAt,domainAt,lastCombat,heavyAt,reactionAt,punishAt;int seenCast,seenPressure;
-        Rhythm(SorcererCat cat,long now) { skillAt=now+(cat.isSukuna()?90:120)+cat.getRandom().nextInt(cat.isSukuna()?70:100);domainAt=now+560+cat.getRandom().nextInt(280);lastCombat=now; }
+        long skillAt,lastCombat,heavyAt,reactionAt,punishAt;int seenCast,seenPressure;
+        Rhythm(SorcererCat cat,long now) { skillAt=now+(cat.isSukuna()?90:120)+cat.getRandom().nextInt(cat.isSukuna()?70:100);lastCombat=now; }
     }
-    private record Counter(SorcererCat cat,SorcererCat rival,long due) {}
     private record Scene(ResourceKey<Level> dimension,Vec3 center,long until) {}
     private static final class State {
         final Map<Integer,Cast> casts=new LinkedHashMap<>();
         final PurpleCarver.Budget carving=new PurpleCarver.Budget();
         final Map<UUID,Setup> positions=new HashMap<>();
         final Map<UUID,Rhythm> rhythms=new HashMap<>();
-        final List<Counter> counters=new ArrayList<>();
         final List<Scene> scenes=new ArrayList<>();
         int serial=1000,poseSerial=1000000;
     }
@@ -77,7 +75,7 @@ public final class CatSorcery {
         boolean hovering;
         int age,stage,phase,stalled,fullAt=-1; float traveled;
         boolean parked,releasedPose,canceled,responding,duelDomain,domainReleased,soloDomain;
-        int revealTicks,revealAge;
+        int revealTicks,revealAge,healthDomainMilestone;
         Cast(State state,SorcererCat cat,LivingEntity target,int kind,boolean large) {
             this(state,cat,target,kind,large,false);
         }
@@ -168,9 +166,10 @@ public final class CatSorcery {
         if(cat.distanceToSqr(target)>36*36)return false;
         State state=STATES.computeIfAbsent(cat.getServer(),key->new State());
         long now=cat.getServer().getTickCount();
-        begin(state,cat,target,cat.isSukuna()?SHRINE:VOID,false);
+        Cast opening=begin(state,cat,target,cat.isSukuna()?SHRINE:VOID,false);
+        opening.healthDomainMilestone=cat.healthDomainMilestone();
         Rhythm rhythm=state.rhythms.computeIfAbsent(cat.getUUID(),key->new Rhythm(cat,now));
-        rhythm.lastCombat=now;rhythm.domainAt=now+1500;rhythm.skillAt=now+240;
+        rhythm.lastCombat=now;rhythm.skillAt=now+240;
         return true;
     }
     public static boolean tryStart(SorcererCat cat,LivingEntity target) {
@@ -181,18 +180,11 @@ public final class CatSorcery {
                 ||cat.distanceToSqr(target)>52*52||!cat.getSensing().hasLineOfSight(target))return false;
         long now=cat.getServer().getTickCount();State s=STATES.computeIfAbsent(cat.getServer(),key->new State());
         Rhythm r=s.rhythms.computeIfAbsent(cat.getUUID(),key->new Rhythm(cat,now));
-        if(now-r.lastCombat>400){r.skillAt=now+100+cat.getRandom().nextInt(80);r.domainAt=Math.max(r.domainAt,now+440);}
+        if(now-r.lastCombat>400){r.skillAt=now+100+cat.getRandom().nextInt(80);}
         r.lastCombat=now;
         if(busy(cat))return false;
         boolean scene=s.scenes.stream().anyMatch(v->v.dimension==level.dimension()&&v.until>now&&v.center.distanceToSqr(cat.position())<72*72);
         if(scene)return false;
-        if(!CatDuel.manages(cat)&&target instanceof SorcererCat rival&&cat.isRival(rival)&&now>=r.domainAt&&!DomainFreeze.catDomainNearby(cat)){
-            schedule(s,cat,target,cat.isSukuna()?SHRINE:VOID,false,false);
-            long next=now+1500+cat.getRandom().nextInt(600);r.domainAt=next;
-            s.rhythms.computeIfAbsent(rival.getUUID(),key->new Rhythm(rival,now)).domainAt=next;
-            s.scenes.add(new Scene(level.dimension(),cat.position(),now+328));
-            return true;
-        }
         if(now<r.skillAt)return false;
         boolean heavyReady=now>=r.heavyAt;
         int kind;
@@ -360,22 +352,12 @@ public final class CatSorcery {
         cancelCasting(cat);DomainFreeze.cancelCat(cat);
         State state=STATES.get(cat.getServer());if(state==null)return;
         for(Cast c:List.copyOf(state.casts.values()))if(c.cat==cat)cancel(state,c);
-        state.counters.removeIf(v->v.cat==cat||v.rival==cat);
     }
     @SubscribeEvent public static void tick(ServerTickEvent event) {
         if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
         MinecraftServer server=net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();State s=STATES.get(server);if(s==null)return;
         long now=server.getTickCount();s.scenes.removeIf(v->now>=v.until);
         s.rhythms.entrySet().removeIf(e->now-e.getValue().lastCombat>2400&&s.casts.values().stream().noneMatch(c->c.cat.getUUID().equals(e.getKey()))&&!s.positions.containsKey(e.getKey()));
-        for(Counter counter:List.copyOf(s.counters))if(now>=counter.due){
-            s.counters.remove(counter);SorcererCat cat=counter.cat;
-            if(able(cat)&&able(counter.rival)&&cat.level()==counter.rival.level()&&cat.canFight(counter.rival)
-                    &&cat.distanceToSqr(counter.rival)<=SorcererCat.RIVAL_RANGE*SorcererCat.RIVAL_RANGE){
-                schedule(s,cat,counter.rival,cat.isSukuna()?SHRINE:VOID,false,true);
-                Rhythm rhythm=s.rhythms.computeIfAbsent(cat.getUUID(),id->new Rhythm(cat,now));
-                rhythm.domainAt=Math.max(rhythm.domainAt,now+1500);rhythm.skillAt=now+360;
-            }
-        }
         for(Setup setup:List.copyOf(s.positions.values())) {
             if(s.positions.get(setup.cat.getUUID())!=setup)continue;
             if(!able(setup.cat)||setup.cat.level()!=setup.movement.level||!setup.cat.canFight(setup.target)
@@ -455,16 +437,13 @@ public final class CatSorcery {
         }
         c.phase=FLIGHT;c.stage=0;c.previous=c.point;c.origin=c.point;
         if(CatSpell.domain(c.kind)){
-            SorcererCat responder=able(c.rival)&&!c.rival.isMahoraga()&&c.rival.level()==c.level?c.rival:null;
-            boolean counter=!c.soloDomain&&(c.duelDomain||c.responding||responder!=null&&c.cat.getRandom().nextBoolean());
+            boolean counter=!c.soloDomain&&c.duelDomain;
             LivingEntity target=c.level.getEntity(c.target) instanceof LivingEntity e?e:null;
             int duration=dev.jujutsuvfx.core.DomainDuration.castTicks(
                     dev.jujutsuvfx.config.VfxConfig.domainSeconds(c.cat.isSukuna()?dev.jujutsuvfx.core.DomainVolume.SHRINE:dev.jujutsuvfx.core.DomainVolume.UNLIMITED_VOID),
                     c.soloDomain?300:100,c.soloDomain||c.duelDomain);
             DomainFreeze.openCat(c.cat,target,counter,c.session,duration);
-            if(!c.duelDomain&&!CatDuel.manages(c.cat)&&target!=null&&c.cat.needsPlayerDomain())c.cat.markPlayerDomainUsed();
-            // One coin toss per opening; a declined response receives the actual domain effects.
-            if(!c.duelDomain&&!c.responding&&counter&&responder!=null)s.counters.add(new Counter(responder,c.cat,now+8));
+            if(c.healthDomainMilestone!=0)c.cat.markPlayerDomainUsed(c.healthDomainMilestone);
         }else if(c.kind==DISMANTLE){dismantle(c);}
         else if(c.kind==CLEAVE){
             LivingEntity target=c.level.getEntity(c.target) instanceof LivingEntity e?e:null;

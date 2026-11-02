@@ -2,7 +2,7 @@ package dev.jujutsuvfx.core;
 
 /** Loader-independent combo timing and continuous, articulated weapon choreography. */
 public final class PlayfulCloudMotion {
-    public static final float ROD_LENGTH = .94f, GRIP = .25f, CHAIN_LENGTH = .235f;
+    public static final float ROD_LENGTH = .94f, GRIP = .25f, CHAIN_LENGTH = .13f;
     public static final int COMBO_WINDOW = 25, MIN_SWING_TICKS = 7, CHARGE_TICKS = 16;
     public static final int HEAVY_HIT_TICK = 4, HEAVY_RECOVERY = 20;
     private PlayfulCloudMotion() {}
@@ -70,6 +70,10 @@ public final class PlayfulCloudMotion {
     public static float trail(int step,float ticks) {
         float t=ticks/duration(step);
         return smooth((t-.16f)/.10f)*(1-smooth((t-.48f)/.19f));
+    }
+    public static float whipDrive(int step,float ticks) {
+        float t=ticks/duration(step);
+        return smooth((t-.08f)/.10f)*(1-smooth((t-.40f)/.12f))*(step==3?1.35f:1);
     }
     public static float heavyPower(int ticks) { return .65f+.35f*clamp(ticks/(float)CHARGE_TICKS); }
     public static float clamp(float t) { return Math.max(0,Math.min(1,t)); }

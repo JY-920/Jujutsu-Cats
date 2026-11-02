@@ -21,6 +21,7 @@ abstract class CursedFistAttackMixin {
     private void jujutsu$forwardPunch(LivingEntity entity, float age, CallbackInfo ci) {
         if (!(entity instanceof Player player)) return;
         HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
+        if(dev.jujutsuvfx.client.YutaKatanaHands.ritual(entity)){ci.cancel();return;}
         if(dev.jujutsuvfx.client.PlayfulCloudHands.pose(entity,model,age)){ci.cancel();return;}
         if(dev.jujutsuvfx.client.MartialClient.owns(entity)){ci.cancel();return;}
         if (model.attackTime <= 0) return;

@@ -101,11 +101,11 @@ public final class MartialCombat {
         double reach=area?3.3:move==MartialArts.PALM?3.25:2.95;
         Vec3 eye=p.getEyePosition(),look=p.getLookAngle();
         var targets=p.level().getEntitiesOfClass(LivingEntity.class,p.getBoundingBox().inflate(reach,1.3,reach),
-                e->e!=p&&e.isAlive()&&e.isPickable()&&!e.isSpectator()&&!p.isAlliedTo(e));
+                e->e.isPickable()&&TechniquePlayerRules.canAffect(p,e));
         targets.sort(Comparator.comparingDouble(e->e.distanceToSqr(p)));
         int count=0;
         for(LivingEntity target:targets) {
-            if(target instanceof Player victim&&!p.canHarmPlayer(victim))continue;
+            if(!TechniquePlayerRules.canAffect(p,target))continue;
             var b=target.getBoundingBox();
             Vec3 nearest=new Vec3(Mth.clamp(eye.x,b.minX,b.maxX),Mth.clamp(eye.y,b.minY,b.maxY),Mth.clamp(eye.z,b.minZ,b.maxZ));
             Vec3 ray=nearest.subtract(eye);double distance=ray.length();

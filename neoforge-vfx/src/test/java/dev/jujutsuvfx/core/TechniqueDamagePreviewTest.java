@@ -27,6 +27,14 @@ public final class TechniqueDamagePreviewTest {
         range(TechniqueDamage.FURNACE,false,true,false,200,9.6f,12);
         range(TechniqueDamage.SHRINE,false,false,false,100,20,50);
         range(TechniqueDamage.SHRINE,true,true,false,100,4,6);
+        range(TechniqueDamage.YUTA_DOMAIN,true,false,false,100,24,24);
+        range(TechniqueDamage.YUTA_DOMAIN,true,true,false,100,6,6);
+        range(TechniqueDamage.YUTA_DOMAIN,false,true,false,200,12,12);
+        range(TechniqueDamage.UZUMAKI,false,false,false,100,30,30);
+        range(TechniqueDamage.UZUMAKI,false,true,false,100,2.4f,2.4f);
+        range(TechniqueDamage.UZUMAKI,false,true,false,200,4.8f,4.8f);
+        range(TechniqueDamage.LOVE_BEAM,false,false,false,100,30,30);
+        range(TechniqueDamage.LOVE_BEAM,false,true,false,100,2.4f,2.4f);
         for(var technique:TechniqueDamage.values())range(technique,true,true,true,0,0,0);
         if(!"0.0048".equals(TechniqueDamagePreview.sample(TechniqueDamage.BLUE,false,true,false,1).text()))
             throw new AssertionError("Small nonzero damage must not be displayed as zero");

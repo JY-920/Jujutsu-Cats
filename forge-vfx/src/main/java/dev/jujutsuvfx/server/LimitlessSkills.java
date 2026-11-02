@@ -430,7 +430,7 @@ public final class LimitlessSkills {
         if(CatAdaptation.controlScale(target,CatAdaptation.Phenomenon.BLUE)<=0)return 0;
         MinecraftServer server = target.getServer();
         State state = server == null ? null : STATES.get(server);
-        if (state == null || !target.isAlive() || !pullEligible(target)) return 0;
+        if (state == null || !target.isAlive() || !pullEligible(target) || target.isPassenger() || target.isVehicle()) return 0;
         long now = server.getTickCount(), remaining = 0;
         for (var entry : state.active.entrySet()) {
             Cast cast = entry.getValue();
@@ -505,6 +505,8 @@ public final class LimitlessSkills {
     }
 
     private static void pull(Entity target, Vec3 focus, float radius, float core) {
+        // Riding must not grant damage immunity, but leave the vehicle movement to vanilla.
+        if (target.isPassenger() || target.isVehicle()) return;
         CatAdaptation.touch(target,CatAdaptation.Phenomenon.BLUE);
         float response=CatAdaptation.controlScale(target,CatAdaptation.Phenomenon.BLUE);
         if(response<=0)return;
@@ -523,6 +525,7 @@ public final class LimitlessSkills {
         target.setDeltaMovement(velocity);
         target.hasImpulse = true;
         target.fallDistance = 0;
+        syncPlayerMotion(target);
     }
 
     private static void blueDamage(State state, Slot slot, ServerPlayer owner, Cast cast,
@@ -755,6 +758,7 @@ public final class LimitlessSkills {
     }
 
     private static void repel(LivingEntity target, Vec3 focus, Vec3 direction, float strength) {
+        if (target.isPassenger() || target.isVehicle()) return;
         CatAdaptation.touch(target,CatAdaptation.Phenomenon.RED);
         double response = CatAdaptation.controlScale(target,CatAdaptation.Phenomenon.RED)* dev.jujutsuvfx.platform.Numbers.clamp(1 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE), 0, 1);
         if (response <= 0) return;
@@ -764,11 +768,16 @@ public final class LimitlessSkills {
         Vec3 velocity = bounded(target.getDeltaMovement().scale(.35).add(impulse), 2.8);
         target.setDeltaMovement(velocity.x, dev.jujutsuvfx.platform.Numbers.clamp(velocity.y, -.45, 1.15), velocity.z);
         target.hasImpulse = true;
+        syncPlayerMotion(target);
+    }
+
+    private static void syncPlayerMotion(Entity target) {
+        if (target instanceof ServerPlayer player)
+            player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket(player));
     }
 
     private static boolean baseEligible(Entity entity) {
-        return entity.isAlive() && !entity.isRemoved() && !entity.isSpectator()
-                && !entity.isPassenger() && !entity.isVehicle();
+        return entity.isAlive() && !entity.isRemoved() && !entity.isSpectator();
     }
     private static boolean pullEligible(Entity entity) {
         return baseEligible(entity) && (entity instanceof LivingEntity || entity instanceof Projectile

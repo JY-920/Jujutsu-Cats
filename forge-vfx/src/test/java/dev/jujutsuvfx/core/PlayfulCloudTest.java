@@ -24,12 +24,14 @@ public final class PlayfulCloudTest {
             float a=PlayfulCloudMotion.trail(step,t);check(a>=0&&a<=1,"bounded trail");
         }
         for(int step=0;step<4;step++) {
+            check(PlayfulCloudMotion.whipDrive(step,-1)==0&&PlayfulCloudMotion.whipDrive(step,PlayfulCloudMotion.duration(step)+1)==0,"idle/recovery must not inject momentum");
+            check(PlayfulCloudMotion.whipDrive(step,PlayfulCloudMotion.duration(step)*.30f)>0,"contact phase transfers wrist momentum");
             var p=PlayfulCloudMotion.sample(step,PlayfulCloudMotion.duration(step)-.001f);
             var idle=PlayfulCloudMotion.IDLE;
             check(Math.abs(p.x()-idle.x())<.001&&Math.abs(p.y()-idle.y())<.001,"visible recovery returns to rest");
             check(Math.abs(Math.sin(Math.toRadians(p.roll()-idle.roll())))<.001,"rotation returns without snapping");
         }
-        check(PlayfulCloudMesh.ROD.size()>100&&PlayfulCloudMesh.LINK.size()==48,"3D rod and open chain links");
+        check(PlayfulCloudMesh.ROD.size()>100&&PlayfulCloudMesh.LINK.size()>100,"Actual interlocking chain geometry required");
         float ymin=100,ymax=-100,zmin=100,zmax=-100;
         for(var q:PlayfulCloudMesh.ROD)for(var v:new PlayfulCloudMesh.Vertex[]{q.a(),q.b(),q.c(),q.d()}) {
             check(Float.isFinite(v.x()+v.y()+v.z()+v.nx()+v.ny()+v.nz()),"finite mesh");

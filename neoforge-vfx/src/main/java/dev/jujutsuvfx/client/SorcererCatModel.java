@@ -11,9 +11,11 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 
 /** Native cat locomotion drives the artist's complete model, not a second visible vanilla cat. */
-final class SorcererCatModel<T extends SorcererCat> extends OcelotModel<T> {
+final class SorcererCatModel<T extends SorcererCat> extends OcelotModel<T> implements CatGeometryPose {
     private final SorcererCatGeometry geometry, wheel;
     private final boolean sukuna, gojo;
+    private final YutaCatModel danceRig=new YutaCatModel(YutaCatModel.createRoot());
+    private boolean dancing;
     private float blindfold;
     private boolean transforming;
     private boolean hideBlindfold, brokenArm, brokenLeftArm;
@@ -44,6 +46,8 @@ final class SorcererCatModel<T extends SorcererCat> extends OcelotModel<T> {
     }
 
     @Override public void setupAnim(T cat, float limbSwing, float limbAmount, float age, float yaw, float pitch) {
+        dancing=cat.danceStyle()!=0;
+        if(dancing){danceRig.young=young;danceRig.applyDance(cat.danceStyle(),cat.danceAge(Mth.clamp(age-cat.tickCount,0,1)));}
         if (cat.behavior() == SorcererCat.STILL || cat.isTransforming()) { limbSwing = 0; limbAmount = 0; }
         float partial = Mth.clamp(age - cat.tickCount, 0, 1);
         super.setupAnim(cat, limbSwing, limbAmount, cat.animationTime(partial), yaw, pitch);
@@ -59,6 +63,7 @@ final class SorcererCatModel<T extends SorcererCat> extends OcelotModel<T> {
         pose.blendFrom(previousPose, cat.combatBlend(partial));
         applyCombatPose();
     }
+    void applyDance(int style,float time){dancing=true;danceRig.young=young;danceRig.applyDance(style,time);}
     private void applyCombatPose(){
         tailChain.capture(body);
         apply(head, CatCombatPose.HEAD, false); apply(body, CatCombatPose.BODY, false);
@@ -93,19 +98,22 @@ final class SorcererCatModel<T extends SorcererCat> extends OcelotModel<T> {
         part.x += pose.value(bone, 3); part.y += pose.value(bone, 4); part.z += pose.value(bone, 5);
     }
     private void combatRoot(PoseStack poses) {
+        if(dancing){danceRig.combatRoot(poses);return;}
         poses.translate(0, 15 / 16f, 0);
         poses.mulPose(Axis.YP.rotation(pose.rootYaw()));
         poses.mulPose(Axis.ZP.rotation(pose.rootRoll()));
         poses.mulPose(Axis.XP.rotation(pose.rootPitch()));
         poses.translate(0, -15 / 16f, 0);
     }
-    boolean hideBlindfold() { return hideBlindfold; }
+    public boolean hideBlindfold() { return hideBlindfold; }
     boolean brokenArm() { return brokenArm; }
-    boolean handUnavailable(int hand) { return hand==SorcererCat.LEFT?brokenLeftArm:brokenArm; }
-    float elbow(int hand) { return pose.elbow(hand); }
+    public boolean handUnavailable(int hand) { return hand==SorcererCat.LEFT?brokenLeftArm:brokenArm; }
+    public float elbow(int hand) { return dancing?danceRig.elbow(hand):pose.elbow(hand); }
+    public boolean smoothArms(){return dancing&&danceRig.smoothArms();}
+    public CatMeshBend meshBend(String bone){return dancing?danceRig.meshBend(bone):null;}
     void handPose(PoseStack poses, int hand) {
         combatRoot(poses);
-        (hand == SorcererCat.LEFT ? leftFrontLeg : rightFrontLeg).translateAndRotate(poses);
+        (dancing?danceRig.bone(hand==SorcererCat.LEFT?"right_front_leg":"left_front_leg"):(hand == SorcererCat.LEFT ? leftFrontLeg : rightFrontLeg)).translateAndRotate(poses);
         poses.translate(0, 5 / 16f, 0); poses.mulPose(Axis.XP.rotation(elbow(hand)));
         poses.translate(0, 4 / 16f, 1 / 16f);
     }
@@ -138,7 +146,7 @@ final class SorcererCatModel<T extends SorcererCat> extends OcelotModel<T> {
             wheel.render(poses,buffer,light,overlay,color,SorcererCatGeometry.DETAILS,this,progress);
         } finally { poses.popPose(); }
     }
-    void attachmentPose(PoseStack poses, String name) {
+    public void attachmentPose(PoseStack poses, String name) {
         ModelPart part = bone(name);
         if (part == null) return;
         part.translateAndRotate(poses);
@@ -154,7 +162,8 @@ final class SorcererCatModel<T extends SorcererCat> extends OcelotModel<T> {
         poses.translate(-x / 16, -y / 16, -z / 16);
     }
 
-    ModelPart bone(String name) {
+    public ModelPart bone(String name) {
+        if(dancing)return danceRig.bone(name);
         // The supplied template labels its +X legs "left". After converting X into
         // Minecraft's model basis those vertices are on the right. Bind by that side
         // so walking and lying-down poses follow the correct limbs; native head aim

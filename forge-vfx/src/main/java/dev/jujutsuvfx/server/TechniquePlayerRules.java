@@ -3,6 +3,7 @@ package dev.jujutsuvfx.server;
 import dev.jujutsuvfx.JujutsuVfx;
 import dev.jujutsuvfx.core.DamageScaling;
 import dev.jujutsuvfx.entity.SorcererCat;
+import dev.jujutsuvfx.entity.YutaCat;
 import dev.jujutsuvfx.item.VfxItems;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,6 +41,7 @@ public final class TechniquePlayerRules {
         if(!(target instanceof Player player))return true;
         if(player.isCreative()||player.getAbilities().invulnerable)return false;
         if(owner instanceof SorcererCat cat)return cat.canFight(player);
+        if(owner instanceof YutaCat cat)return cat.canFight(player);
         return !(owner instanceof Player caster)||(player.getServer()==null||player.getServer().isPvpAllowed())&&caster.canHarmPlayer(player);
     }
     private static String technique(DamageSource source){
@@ -47,12 +49,14 @@ public final class TechniquePlayerRules {
                 .map(k->k.location().getPath()).orElse("");
     }
     private static boolean managed(DamageSource source){
-        return !technique(source).isEmpty()||source.getEntity() instanceof SorcererCat
+        return !technique(source).isEmpty()||(source.getEntity() instanceof SorcererCat||source.getEntity() instanceof YutaCat)
                 ||source.getEntity() instanceof Player p&&VfxItems.isHeld(p.getMainHandItem())&&source.is(DamageTypes.PLAYER_ATTACK);
     }
     private static float catDamage(String kind,float original,boolean blackFlash){
         return switch(kind){
             case "shrine_cut" -> Math.min(6f,original*.20f);
+            case "yuta_ladder" -> Math.min(6f,original*.25f);
+            case "yuta_copy" -> Math.min(8f,original*.35f);
             case "sorcerer_combo" -> Math.min(blackFlash?9f:4.5f,original*.42f);
             case "limitless_blue" -> Math.min(6f,original*.80f);
             case "limitless_red" -> Math.min(20f,original*.35f);
@@ -69,7 +73,7 @@ public final class TechniquePlayerRules {
         if(source.getEntity() instanceof LivingEntity owner&&!canAffect(owner,player))return 0;
         float multiplier=TechniqueDamageRules.multiplier(source);
         if(kind.equals("unlimited_purple"))return DamageScaling.scaled(original,multiplier);
-        float amount=source.getEntity() instanceof SorcererCat?catDamage(kind,original,source instanceof CatMeleeDamage strike&&strike.blackFlash())
+        float amount=(source.getEntity() instanceof SorcererCat||source.getEntity() instanceof YutaCat)?catDamage(kind,original,source instanceof CatMeleeDamage strike&&strike.blackFlash())
                 :kind.equals("shrine_cut")?Math.min(.5f,original*.025f)
                 :kind.equals("sorcerer_combo")?Math.min(.8f,original*.12f)
                 :kind.isEmpty()?Math.min(3f,original*.18f):Math.min(6f,original*.08f);
@@ -84,7 +88,7 @@ public final class TechniquePlayerRules {
         // A second contact in the same tick must not reuse an already broken guard.
         if(player.getCooldowns().isOnCooldown(shield.getItem())){event.setCanceled(true);return;}
         String kind=technique(event.getDamageSource());
-        boolean spell=!kind.isEmpty()&&!kind.equals("sorcerer_combo");
+        boolean spell=!kind.isEmpty()&&!kind.equals("sorcerer_combo")&&!kind.equals("yuta_melee");
         float incoming=event.getOriginalBlockedDamage();
         if(spell){
             event.setBlockedDamage(Math.min(event.getBlockedDamage(),incoming*.30f));
@@ -125,7 +129,7 @@ public final class TechniquePlayerRules {
         if(!(event.getEntity() instanceof ServerPlayer player)||!managed(event.getSource())||event.getAmount()<=0)return;
         if(technique(event.getSource()).equals("unlimited_purple"))return;
         float spent=0;for(Hit hit:recent(player))spent+=hit.amount;
-        float budget=event.getSource().getEntity() instanceof SorcererCat?12f:6f;
+        float budget=(event.getSource().getEntity() instanceof SorcererCat||event.getSource().getEntity() instanceof YutaCat)?12f:6f;
         float multiplier=TechniqueDamageRules.multiplier(event.getSource());
         event.setAmount(DamageScaling.budgeted(event.getAmount(),spent,budget,multiplier));
         if(event.getAmount()>0)recent(player).addLast(new Hit(player.getServer().getTickCount(),

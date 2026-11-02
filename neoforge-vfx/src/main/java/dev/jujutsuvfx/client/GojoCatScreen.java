@@ -18,7 +18,7 @@ public final class GojoCatScreen extends Screen {
     private GojoCatView view;
     private final boolean sukuna, mahoraga;
     private final Button[] appearances = new Button[3], behaviors = new Button[3];
-    private Button arm, blue, red, cursed, blackFlash, automatic;
+    private Button arm, blue, red, cursed, blackFlash, automatic, dance;
     private int left, top, panelWidth, panelHeight;
     private float verticalScale;
     private int ticks;
@@ -73,6 +73,7 @@ public final class GojoCatScreen extends Screen {
         automatic = addRenderableWidget(Button.builder(text("automatic.on"), b -> send(GojoCatEdit.AUTOMATIC, 0))
                 .bounds(left + 12, y(168), panelWidth - 24, buttonHeight).build());
         automatic.visible = !mahoraga;
+        dance=addRenderableWidget(Button.builder(Component.empty(),b->send(GojoCatEdit.DANCE,(view.dance()+1)%3)).bounds(left+12,y(192),panelWidth-24,buttonHeight).build());
         int behaviorWidth = (panelWidth - 32) / 3;
         for (int i = 0; i < behaviors.length; i++) {
             int mode = i;
@@ -85,6 +86,7 @@ public final class GojoCatScreen extends Screen {
     }
     private void refresh() {
         if (blue == null) return;
+        dance.setMessage(Component.translatable("gui.jujutsuvfx.dance."+view.dance()));
         for (int i = 0; i < appearances.length; i++) appearances[i].setMessage(selected("appearance." + i, view.appearance() == i));
         if (sukuna) appearances[0].setMessage(Component.literal(view.broken() ? "" : "● ")
                 .append(Component.translatable("gui.jujutsuvfx.sukuna_cat.normal")));
@@ -144,7 +146,7 @@ public final class GojoCatScreen extends Screen {
         }
         gui.drawString(font, text("appearance"), left + 12, y(53), 0xff9eafc8);
         gui.drawString(font, text("aura"), left + panelWidth / 2 + 7, y(53), 0xff9eafc8);
-        gui.drawString(font, text(view.automatic() ? "automatic.hint" : "fixed.hint"), left + 12, y(196), 0xffbdc7dd);
+
         gui.drawString(font, sukuna ? Component.translatable("gui.jujutsuvfx.sukuna_cat.behavior") : text("behavior"), left + 12, y(214), 0xff9eafc8);
         if (sukuna) gui.drawString(font, Component.translatable("gui.jujutsuvfx.sukuna_cat.enemy"), left + 12, y(124), 0xffd78697);
     }

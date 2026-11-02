@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /** Cosmetic, server-authored movement/contact cue. It cannot request movement or damage. */
 public record CatCombatCue(int actor, int other, int effect, Vec3 from, Vec3 to, int first, int second, int seed)
         implements CustomPacketPayload {
-    public static final int BLINK = 0, DASH = 1, CLASH = 2, KICK = 3, GUARD = 4, BARRAGE = 5, DIVE = 6, IMPACT = 7, INFINITY = 8, BLADE = 9, BLAST_WARNING = 10, DOMAIN_RESULT = 11;
+    public static final int BLINK = 0, DASH = 1, CLASH = 2, KICK = 3, GUARD = 4, BARRAGE = 5, DIVE = 6, IMPACT = 7, INFINITY = 8, BLADE = 9, BLAST_WARNING = 10, DOMAIN_RESULT = 11, SPEECH = 12, YUTA_DOMAIN = 13, YUTA_LADDER = 14, YUTA_SWORD = 15;
     public static final Type<CatCombatCue> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(JujutsuVfx.ID, "cat_combat_cue_v1"));
     public static final StreamCodec<RegistryFriendlyByteBuf, CatCombatCue> CODEC = StreamCodec.of((b,p)->{
         b.writeVarInt(p.actor); b.writeVarInt(p.other); b.writeVarInt(p.effect);

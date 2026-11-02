@@ -1,0 +1,252 @@
+{
+ "vertex": "jujutsuvfx:domain_sky",
+ "fragment": "jujutsuvfx:yuta_geto_clash_composite",
+ "attributes": [
+  "Position",
+  "UV0",
+  "Color"
+ ],
+ "samplers": [
+  {
+   "name": "SceneColor"
+  },
+  {
+   "name": "SceneDepth"
+  },
+  {
+   "name": "EnergyLayer"
+  }
+ ],
+ "uniforms": [
+  {
+   "name": "InverseViewProjection",
+   "type": "matrix4x4",
+   "count": 16,
+   "values": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "name": "RikaPos",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "GetoPos",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "ContactPos",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BurstPos",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "Time",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "RikaCharge",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "GetoCharge",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "RikaBeam",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "GetoBeam",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "Contact",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "Pressure",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "Burst",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "Aftermath",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "Visibility",
+   "type": "float",
+   "count": 1,
+   "values": [
+    1
+   ]
+  },
+  {
+   "name": "Seed",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "EnergyScale",
+   "type": "float",
+   "count": 1,
+   "values": [
+    1
+   ]
+  },
+  {
+   "name": "ViewProjection",
+   "type": "matrix4x4",
+   "count": 16,
+   "values": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1
+   ]
+  },
+  {
+   "name": "Distortion",
+   "type": "float",
+   "count": 1,
+   "values": [
+    1
+   ]
+  },
+  {
+   "name": "FlashEnabled",
+   "type": "float",
+   "count": 1,
+   "values": [
+    1
+   ]
+  },
+  {
+   "name": "Flash",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "Grade",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "GetoScale",
+   "type": "float",
+   "count": 1,
+   "values": [
+    1
+   ]
+  },
+  {
+   "name": "ContactTone",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  }
+ ]
+}

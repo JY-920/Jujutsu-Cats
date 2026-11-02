@@ -26,7 +26,7 @@ final class FistAuraRenderer {
     private static final float FRONT_COVERAGE = .20f;
     record ArmShape(Vector3f palm, Vector3f low, Vector3f high) {}
     private record Hand(Matrix4f transform, Matrix4f projection, ArmShape shape,
-                        Vector3f drag, float time, float power, float seed, boolean empowered, float red) {}
+                        Vector3f drag, float time, float power, float seed, boolean empowered, float red, float coverage) {}
     private static final List<Hand> HANDS = new ArrayList<>();
     private static final Hand[] FIRST_PERSON = new Hand[2];
     private static final Map<LivingEntity, Motion[]> MOTION = new WeakHashMap<>();
@@ -58,7 +58,7 @@ final class FistAuraRenderer {
                 : FistCombo.ready(arm == player.getMainArm() ? player.getMainHandItem() : player.getOffhandItem());
         Hand hand = new Hand(transform, new Matrix4f(RenderSystem.getProjectionMatrix()), shape, drag,
                 time, power, Math.floorMod(player.getId() * 19 + arm.ordinal() * 83, 1021),
-                empowered, empowered ? 1 : 0);
+                empowered, empowered ? 1 : 0, FRONT_COVERAGE);
         // Iris buffers the actual skin draw. Compose only after its hand pass, with this same projection.
         if (firstPerson) FIRST_PERSON[arm == HumanoidArm.RIGHT ? 0 : 1] = hand;
         else if (HANDS.size() < 96) HANDS.add(hand);
@@ -72,7 +72,40 @@ final class FistAuraRenderer {
                 || !Float.isFinite(transform.determinant()) || Math.abs(transform.determinant()) < 1e-8f) return;
         HANDS.add(new Hand(transform, new Matrix4f(RenderSystem.getProjectionMatrix()), shape,
                 drag(entity, arm, partial, transform, false), time, power,
-                Math.floorMod(entity.getId() * 19 + arm.ordinal() * 83 + (red ? 419 : 0), 1021), red, red ? 1 : 0));
+                Math.floorMod(entity.getId() * 19 + arm.ordinal() * 83 + (red ? 419 : 0), 1021), red, red ? 1 : 0, FRONT_COVERAGE));
+    }
+
+    static void drawDancePalm(PoseStack poses, LivingEntity actor, float partial, float power) {drawDancePalm(poses,actor,partial,power,false);}
+    static void drawDancePalm(PoseStack poses, LivingEntity actor, float partial, float power,boolean firstPerson) {
+        if(!ready()||power<=.02f||HANDS.size()>=96)return;
+        Matrix4f transform=new Matrix4f(RenderSystem.getModelViewMatrix()).mul(poses.last().pose());
+        if(transform.transformPosition(new Vector3f()).lengthSquared()>96*96||!Float.isFinite(transform.determinant())||Math.abs(transform.determinant())<1e-8f)return;
+        ArmShape shape=new ArmShape(new Vector3f(),new Vector3f(-.085f,-.08f,-.085f),new Vector3f(.085f,.08f,.085f));
+        Hand hand=new Hand(transform,new Matrix4f(RenderSystem.getProjectionMatrix()),shape,new Vector3f(),
+            (ClientEffectClock.ticks()+partial)*.05f,power,Math.floorMod(actor.getId()*19,1021),false,2f,1f);
+        if(firstPerson)FIRST_PERSON[0]=hand;else HANDS.add(hand);
+    }
+
+    /** One continuous ink-flame field along the full blade, sharing the fist material. */
+    static void drawBlade(PoseStack poses, dev.jujutsuvfx.entity.YutaCat cat, float partial, float power) {
+        if(!ready()||power<=.02f||HANDS.size()>94)return;
+        Matrix4f transform=new Matrix4f(RenderSystem.getModelViewMatrix()).mul(poses.last().pose());
+        if(transform.transformPosition(new Vector3f()).lengthSquared()>96*96||!Float.isFinite(transform.determinant())||Math.abs(transform.determinant())<1e-8f)return;
+        ArmShape shape=new ArmShape(new Vector3f(.025f,.99f,0),new Vector3f(-.038f,.132f,-.010f),new Vector3f(.085f,1.017f,.010f));
+        HANDS.add(new Hand(transform,new Matrix4f(RenderSystem.getProjectionMatrix()),shape,
+            drag(cat,net.minecraft.world.entity.HumanoidArm.RIGHT,partial,transform,false),
+            (ClientEffectClock.ticks()+partial)*.05f,power,Math.floorMod(cat.getId()*19,1021),false,3f,1f));
+    }
+
+    static void drawPlayerBlade(PoseStack poses,LivingEntity actor,float partial,float power,boolean firstPerson){
+        if(!ready()||power<=.02f||HANDS.size()>94)return;
+        Matrix4f transform=new Matrix4f(RenderSystem.getModelViewMatrix()).mul(poses.last().pose());
+        if(!Float.isFinite(transform.determinant())||Math.abs(transform.determinant())<1e-8f)return;
+        ArmShape shape=new ArmShape(new Vector3f(.025f,.99f,0),new Vector3f(-.038f,.132f,-.010f),new Vector3f(.085f,1.017f,.010f));
+        Hand hand=new Hand(transform,new Matrix4f(RenderSystem.getProjectionMatrix()),shape,
+            drag(actor,HumanoidArm.RIGHT,partial,transform,firstPerson),(ClientEffectClock.ticks()+partial)*.05f,
+            power,Math.floorMod(actor.getId()*19,1021),false,3f,1f);
+        if(firstPerson)FIRST_PERSON[0]=hand;else HANDS.add(hand);
     }
 
     /** Palm motion in world space includes camera turns, locomotion and jabs. */
@@ -107,7 +140,7 @@ final class FistAuraRenderer {
         Minecraft mc = Minecraft.getInstance();
         if (!ready() || mc.level == null || mc.player == null || !mc.player.isAlive() || mc.player.isInvisible()
                 || mc.player.isSpectator() || mc.options.hideGui || !mc.options.getCameraType().isFirstPerson()
-                || (!VfxItems.isHeld(mc.player.getMainHandItem()) && !VfxItems.isHeld(mc.player.getOffhandItem()))) {
+                || (!YutaKatanaHands.owns(mc.player) && !PlayerDanceClient.active(mc.player) && !VfxItems.isHeld(mc.player.getMainHandItem()) && !VfxItems.isHeld(mc.player.getOffhandItem()))) {
             beginFirstPersonFrame(); return;
         }
         if (FIRST_PERSON[0] == null && FIRST_PERSON[1] == null) return;
@@ -129,7 +162,7 @@ final class FistAuraRenderer {
         ArmShape shape = hand.shape;
         float aspect = FistSpriteRenderer.aspect(hand.projection);
         // Measure from the knuckle end of the actual skin cube, before camera projection or jab scaling.
-        float rearY = shape.high.y - (shape.high.y - shape.low.y) * FRONT_COVERAGE;
+        float rearY = shape.high.y - (shape.high.y - shape.low.y) * hand.coverage;
         float centerY = (rearY + shape.high.y) * .5f;
         Vector3f anchor = screen(hand, new Vector3f(0, centerY, 0), aspect);
         Vector3f tip = screen(hand, new Vector3f(0, shape.high.y, 0), aspect);
@@ -161,9 +194,10 @@ final class FistAuraRenderer {
         float coreX = (maxX - minX) * .5f, coreY = (maxY - minY) * .5f;
         if (coreX < .0001f || coreY < .0001f) return;
         // The fitted core and chains keep the arm's axes; the flame's separate axes always rise upward.
-        Vector2f rise = flameRise(overlay);
+        boolean blade = hand.red > 2.5f;
+        Vector2f rise = blade ? new Vector2f(armUp) : flameRise(overlay);
         float riseX = rise.dot(right), riseY = rise.dot(armUp);
-        float flameWidth = coreX * 2.10f, flameHeight = Math.max(coreY * 2, coreX * 2.45f);
+        float flameWidth = coreX * (blade ? 1.40f : 2.10f), flameHeight = Math.max(coreY * (blade ? 1.05f : 2), coreX * 2.45f);
         // Bound the rotated flame so sideways or downward-pointing hands cannot clip its upper tips.
         float halfX = Math.max(coreX * 1.15f, Math.abs(riseY) * flameWidth + Math.abs(riseX) * flameHeight);
         float halfY = Math.max(coreY * 1.15f, Math.abs(riseX) * flameWidth + Math.abs(riseY) * flameHeight);
@@ -176,6 +210,15 @@ final class FistAuraRenderer {
             float dx = tail.x - anchor.x, dy = tail.y - anchor.y;
             bendX = dev.jujutsuvfx.platform.Numbers.clamp((dx * right.x + dy * right.y) / halfX, -.40f, .40f);
             bendY = dev.jujutsuvfx.platform.Numbers.clamp((dx * armUp.x + dy * armUp.y) / halfY, -.32f, .32f);
+        }
+        if(blade){
+            // Project the actual curved blade centerline into this hand's view, including mirror views.
+            Vector3f base=screen(hand,new Vector3f(0,shape.low.y,0),aspect);
+            Vector3f end=screen(hand,new Vector3f(.068f,shape.high.y,0),aspect);
+            if(base!=null&&end!=null){
+                bendX=((base.x-x)*right.x+(base.y-y)*right.y)/halfX;
+                bendY=((end.x-base.x)*right.x+(end.y-base.y)*right.y)/halfX;
+            }
         }
         // The short fitted core follows the skin; only free tips are displaced by airflow in the material.
         FistHeldRenderer.renderColored(hand.time, hand.power, hand.seed, hand.empowered, hand.red, overlay,

@@ -35,6 +35,8 @@ public record FistImpact(int attackerId, int targetId, Vec3 point, Vec3 directio
                 (packet,context)->context.enqueueWork(()->dev.jujutsuvfx.client.MartialClient.receive(packet)));
         event.registrar("1011").playToClient(MartialHit.TYPE,MartialHit.CODEC,
                 (packet,context)->context.enqueueWork(()->dev.jujutsuvfx.client.MartialClient.receive(packet)));
+        event.registrar("1").optional().playToClient(YutaKatanaState.TYPE,YutaKatanaState.CODEC,
+                (packet,context)->context.enqueueWork(()->dev.jujutsuvfx.client.YutaKatanaHands.receive(packet)));
         event.registrar("1").optional().playToClient(PlayfulCloudState.TYPE,PlayfulCloudState.CODEC,
                 (packet,context)->context.enqueueWork(()->dev.jujutsuvfx.client.PlayfulCloudHands.receive(packet)));
         event.registrar("1").optional().playToClient(UnlimitedPurple.TYPE, UnlimitedPurple.CODEC,

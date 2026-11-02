@@ -17,6 +17,7 @@ abstract class PurpleHandReturnMixin {
     @Inject(method = "setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V", at = @At("TAIL"))
     private void jujutsu$posePurpleHands(LivingEntity entity, float limbSwing, float limbAmount,
                                           float age, float yaw, float pitch, CallbackInfo ci) {
+        if(dev.jujutsuvfx.client.PlayerDanceClient.active(entity)||dev.jujutsuvfx.client.YutaKatanaHands.owns(entity))return;
         if(TechniqueHands.renderingHand()||TechniqueHands.poseArms((HumanoidModel<?>) (Object) this,entity))return;
         PurpleChargeHands.poseArms((HumanoidModel<?>) (Object) this, entity);
         RedChargeHands.poseArms((HumanoidModel<?>) (Object) this, entity);

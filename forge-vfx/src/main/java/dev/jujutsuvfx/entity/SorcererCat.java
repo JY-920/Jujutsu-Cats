@@ -61,7 +61,16 @@ import java.util.EnumSet;
 import java.util.Objects;
 
 /** An independent sorcerer with cat-shaped locomotion, not vanilla Cat AI or social behavior. */
-public abstract class SorcererCat extends TamableAnimal {
+public abstract class SorcererCat extends TamableAnimal implements DancingCat {
+ private static final EntityDataAccessor<CompoundTag> DEBUG_DANCE=SynchedEntityData.defineId(SorcererCat.class,EntityDataSerializers.COMPOUND_TAG);
+ public CompoundTag danceState(){return entityData.get(DEBUG_DANCE);}
+ public void danceState(CompoundTag tag){entityData.set(DEBUG_DANCE,tag);}
+ public void setDanceStyle(int style){
+  if(level().isClientSide||style<0||style>2)return;
+  cancelPunch();releaseCombatHover();
+  dev.jujutsuvfx.server.CatDance.start(this,style);
+ }
+
     public static final int BLINDFOLD_TICKS = 30, TRANSFORMATION_TICKS = 60;
     public static final int NORMAL = 0, LIFT_BLINDFOLD = 1, NO_BLINDFOLD = 2;
     public static final int STILL = 0, WANDER = 1, AGGRESSIVE = 2;
@@ -194,7 +203,7 @@ public abstract class SorcererCat extends TamableAnimal {
 
     /** Replicates the actual AI target for observers; it grants no client control over targeting. */
     @Override public void setTarget(LivingEntity target) {
-        if(target!=null&&narrativeAlly(target))target=null;
+        if(target!=null&&(danceStyle()!=0||narrativeAlly(target)))target=null;
         super.setTarget(target);
         if(!level().isClientSide) {
             LivingEntity actual=getTarget();
@@ -318,7 +327,7 @@ public abstract class SorcererCat extends TamableAnimal {
     }
 
     @Override protected void defineSynchedData() {
-        super.defineSynchedData();
+        super.defineSynchedData();entityData.define(DEBUG_DANCE,new CompoundTag());
         entityData.define(APPEARANCE, NORMAL);
         entityData.define(BLINDFOLD, 0f);
         entityData.define(TRANSFORMATION, TRANSFORMATION_TICKS);
@@ -379,11 +388,13 @@ public abstract class SorcererCat extends TamableAnimal {
         return canFight(target)&&distanceToSqr(target)<=RIVAL_RANGE*RIVAL_RANGE;
     }
     public boolean isRival(LivingEntity target) {
+        if(target instanceof YutaCat)return isSukuna()&&dev.jujutsuvfx.config.VfxConfig.cinematic()&&!isAlliedTo(target);
         return dev.jujutsuvfx.config.VfxConfig.cinematic() && !narrativeAlly(target) && target instanceof SorcererCat cat && (isMahoraga() != cat.isMahoraga() || !isMahoraga() && isSukuna() != cat.isSukuna());
     }
     public boolean canFight(LivingEntity target) {
-        if (behavior() == STILL || isTransforming() || super.isNoAi() || !eligibleOpponent(target)) return false;
+        if (danceStyle()!=0 || behavior() == STILL || isTransforming() || super.isNoAi() || !eligibleOpponent(target)) return false;
         if(target instanceof Player)return provokedBy(target);
+        if(target instanceof YutaCat)return isRival(target)||provokedBy(target);
         if (target instanceof SorcererCat cat) return (isRival(cat) || provokedBy(cat)) && !cat.isTransforming();
         return provokedBy(target)||dev.jujutsuvfx.config.VfxConfig.cinematic()&&behavior() == AGGRESSIVE;
     }
@@ -423,8 +434,12 @@ public abstract class SorcererCat extends TamableAnimal {
         LivingEntity target=getTarget();
         if(target!=null&&(!canFight(target)||distanceToSqr(target)>RIVAL_RANGE*RIVAL_RANGE))setTarget(null);
     }
-    public boolean needsPlayerDomain(){return !dev.jujutsuvfx.config.VfxConfig.cinematic()&&!dev.jujutsuvfx.server.GojoLastStand.active(this)&&!isMahoraga()&&getHealth()>0&&(!playerDomainUsed&&getHealth()<=getMaxHealth()*.5f||!lowHealthDomainUsed&&getHealth()<=getMaxHealth()*.1f);}
-    public void markPlayerDomainUsed(){if(!playerDomainUsed)playerDomainUsed=true;else if(getHealth()<=getMaxHealth()*.1f)lowHealthDomainUsed=true;}
+    public boolean needsPlayerDomain(){return !dev.jujutsuvfx.server.CatDuel.manages(this)&&!dev.jujutsuvfx.server.GojoLastStand.active(this)&&!isMahoraga()&&healthDomainMilestone()!=0;}
+    public int healthDomainMilestone(){return dev.jujutsuvfx.core.CatDomainRules.milestone(getHealth(),getMaxHealth(),(playerDomainUsed?1:0)|(lowHealthDomainUsed?2:0));}
+    public void markPlayerDomainUsed(int milestone){
+        int used=dev.jujutsuvfx.core.CatDomainRules.consume((playerDomainUsed?1:0)|(lowHealthDomainUsed?2:0),milestone);
+        playerDomainUsed=(used&1)!=0;lowHealthDomainUsed=(used&2)!=0;
+    }
 
     private void updatePlayerBoss(){
         ServerPlayer target=getTarget() instanceof ServerPlayer player&&isAlive()&&!isNoAi()&&!isInSittingPose()
@@ -440,7 +455,7 @@ public abstract class SorcererCat extends TamableAnimal {
     @Override public void setHealth(float health){
         super.setHealth(health);
         // Only full recovery rearms both health thresholds for a new encounter.
-        if(getHealth()>=getMaxHealth()*.98f){playerDomainUsed=false;lowHealthDomainUsed=false;}
+        if(dev.jujutsuvfx.core.CatDomainRules.fullyRecovered(getHealth(),getMaxHealth())){playerDomainUsed=false;lowHealthDomainUsed=false;}
         if(playerBoss!=null){
             playerBoss.setProgress(Mth.clamp(getHealth()/getMaxHealth(),0,1));
             if(getHealth()<=0)playerBoss.removeAllPlayers();
@@ -463,6 +478,7 @@ public abstract class SorcererCat extends TamableAnimal {
     }
 
     @Override public void tick() {
+        if(dev.jujutsuvfx.server.CatDance.hold(this)){super.tick();dev.jujutsuvfx.server.CatDance.hold(this);return;}
         if(!level().isClientSide&&isMahoraga()&&getPersistentData().getBoolean("JujutsuShadowGuest")&&!CatDuel.manages(this)){
             discard();return;
         }
@@ -606,12 +622,12 @@ public abstract class SorcererCat extends TamableAnimal {
         setOldPosAndRot(); yHeadRot = yHeadRotO = pose.getFloat("Head"); yBodyRot = yBodyRotO = pose.getFloat("Body");
         setDeltaMovement(Vec3.ZERO); fallDistance = 0;
     }
-    @Override public boolean isNoAi() { return super.isNoAi() || behavior() == STILL || isTransforming(); }
-    @Override public boolean isPushable() { return behavior() != STILL && !CatDuel.pinned(this) && super.isPushable(); }
+    @Override public boolean isNoAi() { return danceStyle()!=0||super.isNoAi() || behavior() == STILL || isTransforming(); }
+    @Override public boolean isPushable() { return danceStyle()==0 && behavior() != STILL && !CatDuel.pinned(this) && super.isPushable(); }
     @Override public void move(net.minecraft.world.entity.MoverType type,Vec3 step){
         super.move(type,dev.jujutsuvfx.server.CatSpacing.limit(this,step));
     }
-    @Override public void travel(Vec3 input) { if (behavior() == STILL) holdStill(); else if(CatDuel.pinned(this))setDeltaMovement(Vec3.ZERO); else super.travel(input); }
+    @Override public void travel(Vec3 input) { if(dev.jujutsuvfx.server.CatDance.hold(this))return; if (behavior() == STILL) holdStill(); else if(CatDuel.pinned(this))setDeltaMovement(Vec3.ZERO); else super.travel(input); }
     @Override public void knockback(double strength, double x, double z) { if (behavior() != STILL && !receivingCombo && !combat.guarding()) super.knockback(strength, x, z); }
     @Override protected SoundEvent getAmbientSound() { return null; }
     @Override protected SoundEvent getHurtSound(DamageSource source) { return null; }
@@ -891,6 +907,8 @@ public abstract class SorcererCat extends TamableAnimal {
 
     @Override public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        // A transient dance must not persist the virtual isNoAi() override.
+        if(danceStyle()!=0)tag.putBoolean("NoAI",super.isNoAi());
         tag.putBoolean("GojoLastStandPending",resumeLastStand||dev.jujutsuvfx.server.GojoLastStand.active(this));
         if (hoverLease > 0) tag.putBoolean("NoGravity", gravityBeforeHover);
         String prefix = isMahoraga() ? "Mahoraga" : isSukuna() ? "Sukuna" : "Gojo";

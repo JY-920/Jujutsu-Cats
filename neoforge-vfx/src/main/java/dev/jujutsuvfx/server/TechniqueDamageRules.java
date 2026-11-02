@@ -14,7 +14,15 @@ public final class TechniqueDamageRules {
 
     public static boolean hurt(LivingEntity target,DamageSource source,float amount,TechniqueDamage technique) {
         if(!Float.isFinite(amount)||amount<=0)return false;
-        float multiplier=VfxConfig.damagePercent(technique)/100f;
+        return hurtScaled(target,source,amount,VfxConfig.damagePercent(technique)/100f * dev.jujutsuvfx.core.YutaCombatRules.amplification(
+            source.getEntity() instanceof ServerPlayer, source.getEntity() instanceof LivingEntity owner && dev.jujutsuvfx.effect.VfxEffects.amplified(owner),true));
+    }
+    public static boolean hurtYutaMelee(LivingEntity target,DamageSource source,float amount) {
+        return hurtScaled(target,source,amount,1f);
+    }
+    private static boolean hurtScaled(LivingEntity target,DamageSource source,float amount,float tuning) {
+        if(!Float.isFinite(amount)||amount<=0)return false;
+        float multiplier=tuning*(source.getEntity() instanceof dev.jujutsuvfx.entity.YutaCat cat?YutaDomain.damageMultiplier(cat):1f);
         if(multiplier<=0)return false;
         DamageSource tuned=new TunedSource(source,multiplier);
         return target.hurt(tuned,target instanceof ServerPlayer?amount:DamageScaling.scaled(amount,multiplier));

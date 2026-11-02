@@ -19,7 +19,9 @@
     "MobLeashAccessor",
     "TerrainExplosionAccessor",
     "BlueDamageKnockbackMixin",
-    "CinematicSoundBroadcastMixin"
+    "CinematicSoundBroadcastMixin",
+    "LivingDanceStateMixin",
+    "LivingDanceAiMixin"
   ],
   "client": [
     "EffectBlendModeAccessor",
@@ -38,8 +40,14 @@
     "CinematicCameraMixin",
     "CinematicCameraShakeMixin",
     "CinematicSoundListenerMixin",
+    "PlayerDanceHandMixin",
+    "PlayerDanceCapeMixin",
     "MartialModelMixin",
-    "MartialLimbMixin"
+    "MartialLimbMixin",
+    "LivingDanceRenderMixin",
+    "LivingDanceFallbackMixin",
+    "DanceModelPartMixin",
+    "EmfCurvedLimbMixin"
   ],
   "injectors": {
     "defaultRequire": 1

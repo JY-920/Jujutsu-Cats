@@ -63,6 +63,7 @@ public final class GojoCatControl {
             sessions.remove(player.getUUID()); return;
         }
         switch (packet.action()) {
+            case GojoCatEdit.DANCE -> { if(packet.value()<0||packet.value()>2)return; cat.setDanceStyle(packet.value()); }
             case GojoCatEdit.APPEARANCE -> {
                 cat.setAppearance(packet.value());
                 if (cat.isSukuna() && packet.value() == SorcererCat.NORMAL) cat.setBrokenArm(false);

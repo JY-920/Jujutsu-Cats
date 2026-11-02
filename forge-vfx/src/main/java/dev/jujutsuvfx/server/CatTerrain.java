@@ -2,6 +2,8 @@ package dev.jujutsuvfx.server;
 
 import dev.jujutsuvfx.compat.CleaveCompatibility;
 import dev.jujutsuvfx.entity.SorcererCat;
+import dev.jujutsuvfx.entity.YutaCat;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,7 +15,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import java.util.*;
 
 /** Small, shared per-level terrain budget. Route probes never mutate the world. */
-final class CatTerrain {
+public final class CatTerrain {
     private CatTerrain(){}
     private static long lastWarning;
     private static void failed(Throwable failure){
@@ -23,22 +25,22 @@ final class CatTerrain {
     private static final Map<ServerLevel,Budget> BUDGETS=new WeakHashMap<>();
     private record Cell(BlockPos pos,BlockState state){}
     private static final class Budget {long tick;int used;final Map<UUID,Integer> actors=new HashMap<>();}
-    static boolean mover(SorcererCat cat){return (cat.isSukuna()||cat.isMahoraga())&&TechniqueTerrainRules.enabled();}
+    static boolean mover(LivingEntity cat){return (cat instanceof YutaCat||cat instanceof SorcererCat sorcerer&&(sorcerer.isSukuna()||sorcerer.isMahoraga()))&&TechniqueTerrainRules.enabled();}
     private static boolean loaded(ServerLevel level,BlockPos pos){
         if(!level.isInWorldBounds(pos)||!level.getWorldBorder().isWithinBounds(pos)||!CleaveCompatibility.worldBlock(level,pos))return false;
         for(int x=(pos.getX()-1)>>4;x<=(pos.getX()+1)>>4;x++)for(int z=(pos.getZ()-1)>>4;z<=(pos.getZ()+1)>>4;z++)
             if(level.getChunkSource().getChunkNow(x,z)==null)return false;
         return true;
     }
-    private static boolean breakable(SorcererCat cat,ServerLevel level,BlockPos pos,BlockState state){
+    private static boolean breakable(LivingEntity cat,ServerLevel level,BlockPos pos,BlockState state){
         return loaded(level,pos)&&state.getFluidState().isEmpty()&&state.getDestroySpeed(level,pos)>=0
                 &&state.canEntityDestroy(level,pos,cat);
     }
     /** Permit an obstructed route only when every intersecting solid can be cleared later. */
-    static boolean route(SorcererCat cat,Vec3 from,Vec3 to){
+    public static boolean route(LivingEntity cat,Vec3 from,Vec3 to){
         try{return probe(cat,from,to);}catch(RuntimeException|LinkageError failure){failed(failure);return false;}
     }
-    private static boolean probe(SorcererCat cat,Vec3 from,Vec3 to){
+    private static boolean probe(LivingEntity cat,Vec3 from,Vec3 to){
         if(!mover(cat)||!(cat.level() instanceof ServerLevel level)||!TechniqueTerrainRules.canGrief(cat))return false;
         int steps=Math.max(1,(int)Math.ceil(from.distanceTo(to)/.65));if(steps>86)return false;
         for(int i=1;i<=steps;i++){
@@ -52,11 +54,11 @@ final class CatTerrain {
         }
         return true;
     }
-    private static AABB bodyBox(SorcererCat cat,Vec3 point){
+    private static AABB bodyBox(LivingEntity cat,Vec3 point){
         AABB b=cat.getBoundingBox().move(point.subtract(cat.position())).inflate(.12,0,.12);
-        return new AABB(b.minX,b.minY+.20,b.minZ,b.maxX,b.maxY+.15,b.maxZ);
+        return new AABB(b.minX,b.minY+(cat instanceof YutaCat?.02:.20),b.minZ,b.maxX,b.maxY+.15,b.maxZ);
     }
-    static void clearStep(SorcererCat cat,Vec3 from,Vec3 to){
+    public static void clearStep(LivingEntity cat,Vec3 from,Vec3 to){
         if(!mover(cat)||from.distanceToSqr(to)>2.5*2.5||from.distanceToSqr(to)<.0001)return;
         AABB box=bodyBox(cat,from).minmax(bodyBox(cat,to));
         if(box.getXsize()*box.getYsize()*box.getZsize()>192)return;
@@ -73,10 +75,10 @@ final class CatTerrain {
                 cat.getX(),cat.getY(),cat.getZ(),q.getX()+.5,q.getY()+.5,q.getZ()+.5))seam.add(q);}
         clear(cat,seam,32);
     }
-    private static void clear(SorcererCat cat,Collection<BlockPos> cells,int limit){
+    private static void clear(LivingEntity cat,Collection<BlockPos> cells,int limit){
         try{clearBatch(cat,cells,limit);}catch(RuntimeException|LinkageError failure){failed(failure);}
     }
-    private static void clearBatch(SorcererCat cat,Collection<BlockPos> cells,int limit){
+    private static void clearBatch(LivingEntity cat,Collection<BlockPos> cells,int limit){
         if(!(cat.level() instanceof ServerLevel level)||!TechniqueTerrainRules.canGrief(cat))return;
         Budget b=BUDGETS.computeIfAbsent(level,k->new Budget());
         if(b.tick!=level.getGameTime()){b.tick=level.getGameTime();b.used=0;b.actors.clear();}

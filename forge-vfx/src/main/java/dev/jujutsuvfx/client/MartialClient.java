@@ -161,6 +161,8 @@ public final class MartialClient {
     }
     public static void pose(LivingEntity entity,HumanoidModel<?> model,float ageInTicks){
         FlexibleLimbRenderer.clear(model);
+        if(PlayerDanceClient.pose(entity,model,ageInTicks))return;
+        if(YutaKatanaHands.pose(entity,model,ageInTicks))return;
         if(!owns(entity)||!(entity instanceof AbstractClientPlayer actor))return;
         boolean mirrored=actor.getMainArm()==HumanoidArm.LEFT;
         if(firstPersonDepth>0&&actor==local){
@@ -191,7 +193,7 @@ public final class MartialClient {
         Saved saved=SAVED.remove(model);if(saved==null)return;
         for(int i=0;i<saved.parts.length;i++)saved.parts[i].loadPose(saved.poses[i]);
     }
-    private static void save(HumanoidModel<?> model){
+    static void save(HumanoidModel<?> model){
         ModelPart[] parts=model instanceof PlayerModel<?> p
                 ?new ModelPart[]{p.head,p.hat,p.body,p.rightArm,p.leftArm,p.rightLeg,p.leftLeg,p.rightSleeve,p.leftSleeve,p.rightPants,p.leftPants,p.jacket}
                 :new ModelPart[]{model.head,model.hat,model.body,model.rightArm,model.leftArm,model.rightLeg,model.leftLeg};

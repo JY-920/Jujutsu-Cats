@@ -66,7 +66,9 @@ final class CatCombatPose {
         if (move == RAPID) {
             float weight=smooth(time/3)*(1-smooth((time-32)/4));
             float phase=(time-4)%3;if(phase<0)phase+=3;
-            float punch=(1-smooth(Math.abs(phase-.65f)/1.65f))*weight;
+            // Circular distance makes both the pose and its slope meet at phase 0/3.
+            float distance=Math.abs(phase-.65f);distance=Math.min(distance,3-distance);
+            float punch=(1-smooth(distance/1.5f))*weight;
             arm(main,-.3f-1.27f*punch,sign*(.16f-.35f*punch),sign*.20f,-1.55f+1.48f*punch,weight,-1.2f*weight,-1.65f*punch);
             arm(support,.08f,sign*.10f,-sign*.22f,-1.9f,weight,-1.45f*weight,.22f*punch);
             rotate(BODY,0,sign*.23f*punch,-sign*.065f*weight);rotate(HEAD,-.1f*weight,0,0);

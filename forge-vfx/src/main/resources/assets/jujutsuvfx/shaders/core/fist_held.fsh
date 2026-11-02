@@ -85,10 +85,21 @@ void vfxMaterialMain() {
             + .008 * sin(uv.x * 17.0 + FlamePose.y * 4.7 + FlameFlicker.w * .50);
     float coating = max((skin - .025) * 1.18, (cuff - uv.y) * 1.18);
     float d = min(flame, coating);
+    // A thin blade sheath uses the same flowing ink, but never the fist's round silhouette.
+    float blade = step(2.5, Charged);
+    if (blade > .5) {
+        float along = clamp(uv.y / CoreHalf.y * .5 + .5, 0.0, 1.0);
+        float taper = 1.0 - .83 * smoothstep(.83, 1.0, along);
+        float edge = (noise(vec2(along * 30.0 - Time * 9.0, Seed)) - .5) * .085;
+        vec2 fitted = uv;
+        fitted.x -= Bend.x + Bend.y * along * along;
+        d = max(abs(fitted.x) - CoreHalf.x * .58 * taper - .025 - edge, abs(uv.y) - CoreHalf.y - .012);
+    }
     float aa = max(fwidth(d), .002);
     float body = 1.0 - smoothstep(-aa, aa, d);
     float inkWidth = .074 + .12 * curl
             + .036 * sin(angle * 5.0 + FlamePose.z * 4.3 + FlameFlicker.x * .55);
+    inkWidth = mix(inkWidth, .045 + .025 * curl, blade);
     float ink = (1.0 - smoothstep(inkWidth * .58, inkWidth, -d)) * body;
     float vein = pow(.5 + .5 * sin(angle * 11.0 + curl * 12.0 + radial * 24.0
             + FlamePose.w * 5.2 + FlameFlicker.z * .75), 5.0);
@@ -102,6 +113,13 @@ void vfxMaterialMain() {
     vec3 inkColor = mix(vec3(.0015, .007, .009), vec3(.006, .0003, .001), red);
     vec3 edgeColor = mix(vec3(.025, 1.13, 1.30), vec3(1.40, .025, .070), red);
     vec3 glowColor = mix(vec3(.02, .69, .86), vec3(1.05, .012, .055), red);
+    float violet = step(1.5, Charged);
+    lowColor = mix(lowColor, vec3(.19, .025, .48), violet);
+    highColor = mix(highColor, vec3(.70, .25, 1.15), violet);
+    rippleColor = mix(rippleColor, vec3(.13, .015, .24), violet);
+    inkColor = mix(inkColor, vec3(.008, .001, .018), violet);
+    edgeColor = mix(edgeColor, vec3(1.12, .64, 1.50), violet);
+    glowColor = mix(glowColor, vec3(.72, .16, 1.22), violet);
     vec3 energy = mix(lowColor, highColor, coarse);
     energy += rippleColor * pow(.5 + .5 * sin(p.y * 12.0 + curl * 7.0 - time * 2.3
             + FlamePose.x * 3.1 + FlameFlicker.y * .70), 4.0);

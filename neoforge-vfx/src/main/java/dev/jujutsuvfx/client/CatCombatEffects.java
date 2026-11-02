@@ -25,13 +25,15 @@ public final class CatCombatEffects {
     private static final int CARD_BUDGET=112;
     private static long nextGuardSound;
     private CatCombatEffects(){}
-    static void clear(){CUES.clear();nextGuardSound=0;InfinityBarrierRenderer.clear();MahoragaBladeRenderer.clear();MahoragaShadowRenderer.release();BlastWarningRenderer.clear();}
-    static void tick(){MahoragaBladeRenderer.tick();CUES.removeIf(c->c.age(0)>.78f);}
+    static void clear(){YutaDomainRenderer.clear();CursedSpeechRenderer.clear();CUES.clear();nextGuardSound=0;InfinityBarrierRenderer.clear();MahoragaBladeRenderer.clear();MahoragaShadowRenderer.release();BlastWarningRenderer.clear();}
+    static void tick(){YutaDomainRenderer.tick();CursedSpeechRenderer.tick();MahoragaBladeRenderer.tick();CUES.removeIf(c->c.age(0)>.78f);}
     public static void receive(CatCombatCue packet){
         Minecraft mc=Minecraft.getInstance();ClientFistEffects.changeLevel(mc.level);
-        if(mc.level==null||mc.player==null||packet.effect()<0||packet.effect()>CatCombatCue.DOMAIN_RESULT
+        if(mc.level==null||mc.player==null||packet.effect()<0||packet.effect()>CatCombatCue.YUTA_SWORD
                 ||!finite(packet.from())||!finite(packet.to())||packet.from().distanceToSqr(packet.to())>56*56
                 ||Math.min(EffectView.distanceToSqr(packet.from()),EffectView.distanceToSqr(packet.to()))>(packet.effect()==CatCombatCue.BLAST_WARNING||packet.effect()==CatCombatCue.DOMAIN_RESULT?192*192:112*112))return;
+        if(packet.effect()>=CatCombatCue.YUTA_DOMAIN){YutaDomainRenderer.receive(packet);return;}
+        if(packet.effect()==CatCombatCue.SPEECH){CursedSpeechRenderer.receive(packet);return;}
         if(packet.effect()==CatCombatCue.BLAST_WARNING){BlastWarningRenderer.receive(packet);return;}
         if(packet.effect()==CatCombatCue.DOMAIN_RESULT){ClientDomainResolution.receive(packet.actor(),packet.other(),packet.first()!=0);return;}
         if(packet.effect()==CatCombatCue.BLADE){MahoragaBladeRenderer.receive(packet);return;}
@@ -57,7 +59,7 @@ public final class CatCombatEffects {
         if(CUES.size()>=32)CUES.removeFirst();CUES.add(new Cue(packet,ClientEffectClock.ticks()));
     }
     static void render(RenderLevelStageEvent event){
-        MahoragaBladeRenderer.render(event);BlastWarningRenderer.render(event);MahoragaShadowRenderer.render(event);
+        YutaDomainRenderer.render(event);CursedSpeechRenderer.render(event);MahoragaBladeRenderer.render(event);BlastWarningRenderer.render(event);MahoragaShadowRenderer.render(event);
         if(CUES.isEmpty()||!FistSpriteRenderer.ready())return;
         float partial=event.getPartialTick().getGameTimeDeltaPartialTick(false),time=((ClientEffectClock.ticks()%24000)+partial)*.05f;
         Vec3 camera=event.getCamera().getPosition();
@@ -149,6 +151,7 @@ public final class CatCombatEffects {
                 f.shape,f.seed,f.erosion,1,f.alpha,f.red);
     }
     static void camera(ViewportEvent.ComputeCameraAngles event,float partial,float scale){
+        CursedSpeechRenderer.camera(event,partial,scale);
         Minecraft mc=Minecraft.getInstance();if(mc.player==null)return;float kick=0;
         for(Cue c:CUES)if(c.data.effect()==CatCombatCue.CLASH||c.data.effect()==CatCombatCue.DIVE){
             if(CatCinematicCamera.steadyGojoView()&&mc.getCameraEntity().getId()==c.data.other())continue;

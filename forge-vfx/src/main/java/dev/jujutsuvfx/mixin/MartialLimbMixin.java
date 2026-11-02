@@ -11,8 +11,9 @@ import java.util.List;
 
 // Embeddium also intercepts compile at HEAD; curved limbs must precede its rigid-cuboid fast path.
 @Mixin(value=ModelPart.class,priority=1100)
-abstract class MartialLimbMixin {
+abstract class MartialLimbMixin implements dev.jujutsuvfx.client.CurvedCubeHolder {
     @Shadow @Final private List<ModelPart.Cube> cubes;
+    @Override public List<ModelPart.Cube> jujutsu$cubes(){return cubes;}
     @Inject(method="compile",at=@At("HEAD"),cancellable=true)
     private void jujutsu$curvedSkin(PoseStack.Pose pose,VertexConsumer out,int light,int overlay,float r,float g,float b,float a,CallbackInfo ci){
         if(FlexibleLimbRenderer.render((ModelPart)(Object)this,cubes,pose,out,light,overlay,((int)(a*255)<<24)|((int)(r*255)<<16)|((int)(g*255)<<8)|(int)(b*255)))ci.cancel();

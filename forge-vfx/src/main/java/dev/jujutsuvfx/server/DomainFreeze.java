@@ -205,6 +205,35 @@ public final class DomainFreeze {
         State state=STATES.get(cat.getServer());if(state==null)return;
         Lock lock=state.locks.remove(cat.getUUID());if(lock!=null)lock.release();
     }
+    public record YutaRival(UUID owner,int id) {}
+    public static YutaRival findYutaRival(LivingEntity cat,Vec3 center,float radius){
+        State state=STATES.get(cat.getServer());if(state==null)return null;
+        for(Session s:state.domains.values()){
+            if(s.settled||s.peer!=0||s.kind==DomainVolume.BARRAGE||s.dimension!=cat.level().dimension()
+                    ||!DomainVolume.overlaps(center,radius,s.center,s.radius))continue;
+            LivingEntity owner=s.cat!=null?s.cat:s.player;
+            if(YutaDomain.canAffect(cat,owner))return new YutaRival(s.key.owner,s.key.id);
+        }
+        return null;
+    }
+    public static boolean yutaRivalActive(LivingEntity cat,YutaRival rival){
+        State state=STATES.get(cat.getServer());Session s=state==null?null:state.domains.get(new Key(rival.owner,rival.id));
+        return s!=null&&!s.settled&&s.dimension==cat.level().dimension();
+    }
+    public static void extendYutaRival(LivingEntity cat,YutaRival rival,long until){
+        State state=STATES.get(cat.getServer());Session s=state==null?null:state.domains.get(new Key(rival.owner,rival.id));
+        if(s!=null&&!s.settled)s.settlesAt=Math.max(s.settlesAt,until);
+    }
+    public static void shatterYutaRival(LivingEntity cat,YutaRival rival){
+        State state=STATES.get(cat.getServer());if(state==null)return;Key key=new Key(rival.owner,rival.id);
+        Session s=state.domains.get(key);if(s==null)return;
+        s.settled=false;state.cancel(key,s.player);
+    }
+    public static void releaseBlockedYuta(LivingEntity cat){
+        State state=STATES.get(cat.getServer());if(state==null)return;Lock lock=state.locks.get(cat.getUUID());if(lock==null)return;
+        lock.casts.removeIf(key->YutaDomain.blocksDomain(key.owner,cat));
+        if(lock.casts.isEmpty()&&cat.getServer().getTickCount()>=lock.stunDeadline()){lock.release();state.locks.remove(cat.getUUID());}
+    }
     public static boolean catActive(SorcererCat cat){return cat!=null&&activeCatSession(STATES.get(cat.getServer()),cat)!=null;}
     public static boolean catClashing(SorcererCat gojo,SorcererCat sukuna){
         if(gojo==null||sukuna==null||gojo.getServer()!=sukuna.getServer())return false;
@@ -418,6 +447,7 @@ public final class DomainFreeze {
                 CatAdaptation.controlDuration(lock.entity,entry.getKey(),entry.getValue().ticks)<=now);
     }
     private static boolean eligible(Entity entity,Session session){
+        if(YutaDomain.blocksDomain(session.key.owner,entity))return false;
         if(session.soleTarget!=null&&!session.soleTarget.equals(entity.getUUID()))return false;
         if(session.cat!=null&&(session.spared.contains(entity.getUUID())||!TechniquePlayerRules.canAffect(session.cat,entity)))return false;
         if(session.spared.contains(entity.getUUID()))return false;
@@ -497,9 +527,19 @@ public final class DomainFreeze {
         }
         return (int)dev.jujutsuvfx.platform.Numbers.clamp(end-now,0,2600);
     }
+    /** A brief speech/punch lock is ordinary combat, not an intervening domain. Call after hold. */
+    static boolean hasDomainLock(Entity entity){
+        State state=STATES.get(entity.getServer());if(state==null)return false;
+        Lock lock=state.locks.get(entity.getUUID());if(lock==null||lock.entity!=entity)return false;
+        return lock.casts.stream().anyMatch(key->{
+            Session session=state.domains.get(key);
+            return session!=null&&session.dimension==entity.level().dimension();
+        });
+    }
     /** Called before tickCount increments, including the passenger tick path which has no Pre event. */
     public static boolean hold(Entity entity){
         if(entity.level().isClientSide||!entity.isAlive()||entity.isRemoved())return false;
+        if(entity instanceof dev.jujutsuvfx.entity.YutaCat yuta)YutaDomain.beforeFreeze(yuta);
         if(entity instanceof SorcererCat cat&&cat.finaleWard()){releaseFinaleActor(cat);return false;}
         MinecraftServer server=entity.getServer();State state=STATES.get(server);if(state==null)return false;
         // New entities inside the white field are caught before their first movement/explosion tick.

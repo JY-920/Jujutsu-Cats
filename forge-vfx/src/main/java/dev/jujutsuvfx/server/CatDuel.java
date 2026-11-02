@@ -72,7 +72,17 @@ public final class CatDuel {
         if(cat==null||cat.level().isClientSide)return null;
         State s=STATES.get(cat.getServer());return s==null?null:s.byCat.get(cat.getUUID());
     }
-    public static boolean manages(SorcererCat cat){Duel d=duel(cat);return d!=null&&!d.closing;}
+    public static boolean manages(SorcererCat cat){Duel d=duel(cat);return dev.jujutsuvfx.config.VfxConfig.cinematic()&&d!=null&&!d.closing&&!outsideScriptTarget(d.gojo,d)&&!outsideScriptTarget(d.sukuna,d);}
+    private static int actorKind(LivingEntity entity){
+        if(entity==null)return dev.jujutsuvfx.core.CatDomainRules.NONE;
+        if(entity instanceof SorcererCat c)return c.isGojo()?1:c.isSukuna()?2:c.isMahoraga()?3:4;
+        return dev.jujutsuvfx.core.CatDomainRules.OTHER;
+    }
+    private static boolean outsideScriptTarget(SorcererCat cat,Duel d){
+        LivingEntity target=cat.getTarget();if(target==null||!target.isAlive()||!cat.canFight(target))return false;
+        if(!dev.jujutsuvfx.core.CatDomainRules.scriptOpponent(actorKind(cat),actorKind(target),d!=null&&target==d.mahoraga))return true;
+        return d!=null&&target!=(cat.isGojo()?d.sukuna:d.gojo)&&target!=d.mahoraga;
+    }
     public static boolean meleeOnly(SorcererCat cat){Duel d=duel(cat);return d!=null&&d.phase==FINALE_COMBAT;}
     /** Only the authored arm-repair close-up deflects the two scene opponents' attacks. */
     public static boolean recoveryProtected(SorcererCat cat,DamageSource source){
@@ -143,10 +153,10 @@ public final class CatDuel {
                 cat.combat().reset();cat.getNavigation().stop();cat.renewCombatHover();cat.setDeltaMovement(Vec3.ZERO);return true;
             }return false;
         }
-        if(cat.retaliationAttacker()!=null){if(d!=null)close(state,d,true);return false;}
+        if(cat.retaliationAttacker()!=null||outsideScriptTarget(cat,d)||d!=null&&(outsideScriptTarget(d.gojo,d)||outsideScriptTarget(d.sukuna,d))){if(d!=null)close(state,d,true);return false;}
         if(d==null&&(cat.tickCount%10==1||cat.getTarget() instanceof SorcererCat)){
             SorcererCat rival=level.getEntitiesOfClass(SorcererCat.class,cat.getBoundingBox().inflate(128),
-                    other->other!=cat&&!other.isMahoraga()&&!GojoLastStand.active(other)&&able(other)&&other.retaliationAttacker()==null&&cat.isRival(other)&&cat.canFight(other)
+                    other->other!=cat&&!other.isMahoraga()&&!GojoLastStand.active(other)&&able(other)&&other.retaliationAttacker()==null&&!outsideScriptTarget(other,null)&&cat.isRival(other)&&cat.canFight(other)
                             &&cat.distanceToSqr(other)<=128*128&&!state.byCat.containsKey(other.getUUID()))
                     .stream().min(Comparator.comparingDouble(cat::distanceToSqr)).orElse(null);
             if(rival!=null&&!DomainFreeze.hold(cat)&&!DomainFreeze.hold(rival)){
@@ -207,7 +217,7 @@ public final class CatDuel {
 
     private static void advance(State state,Duel d){
         if(d.closing)return;long now=d.level.getServer().getTickCount();
-        if(!able(d.gojo)||d.gojo.level()!=d.level||d.gojo.retaliationAttacker()!=null||d.sukuna.retaliationAttacker()!=null
+        if(outsideScriptTarget(d.gojo,d)||outsideScriptTarget(d.sukuna,d)||!able(d.gojo)||d.gojo.level()!=d.level||d.gojo.retaliationAttacker()!=null||d.sukuna.retaliationAttacker()!=null
                 ||d.phase!=FINALE_BLAST&&(!able(d.sukuna)||d.sukuna.level()!=d.level)) {close(state,d,true);return;}
         if(d.lastTick==now)return;d.lastTick=now;updateProgress(d);int age=(int)(now-d.started);
         if(reacts(d,d.gojo))d.gojoAnchor=d.gojo.position();

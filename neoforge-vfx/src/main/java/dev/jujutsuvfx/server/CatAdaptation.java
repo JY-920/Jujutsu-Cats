@@ -30,7 +30,7 @@ public final class CatAdaptation {
         IMPACT("impact",80), SLASH("slash",60), PROJECTILE("projectile",80), FIRE("fire",70),
         EXPLOSION("explosion",90), MAGIC("magic",100), ENVIRONMENT("environment",90),
         CURSED("cursed",90), BLACK_FLASH("black_flash",120), BLUE("blue",100), RED("red",110),
-        PURPLE("purple",160), VOID("void",100), INFINITY("infinity",120);
+        PURPLE("purple",160), VOID("void",100), INFINITY("infinity",120), SPEECH("cursed_speech",80), LIGHT("jacob_ladder",120);
         public final String id;
         public final int stepTicks;
         Phenomenon(String id,int ticks){this.id=id;stepTicks=ticks;}
@@ -174,8 +174,12 @@ public final class CatAdaptation {
             case SorcererCat.CURSED->Phenomenon.CURSED;case SorcererCat.BLACK_FLASH->Phenomenon.BLACK_FLASH;
             default->Phenomenon.IMPACT;};
         String id=source.typeHolder().unwrapKey().map(k->k.location().toString()).orElse("");
+        if(source.getEntity() instanceof dev.jujutsuvfx.entity.YutaCat yuta
+                &&(id.equals("jujutsuvfx:yuta_melee")||id.equals("jujutsuvfx:sorcerer_combo")))
+            return yuta.bladeDrawn()?Phenomenon.SLASH:Phenomenon.IMPACT;
         Phenomenon technique=switch(id){
-            case "jujutsuvfx:sukuna_cleave","jujutsuvfx:shrine_cut"->Phenomenon.SLASH;
+            case "jujutsuvfx:yuta_ladder"->Phenomenon.LIGHT;
+            case "jujutsuvfx:yuta_copy","jujutsuvfx:sukuna_cleave","jujutsuvfx:shrine_cut"->Phenomenon.SLASH;
             case "jujutsuvfx:limitless_blue"->Phenomenon.BLUE;case "jujutsuvfx:limitless_red"->Phenomenon.RED;
             case "jujutsuvfx:hollow_purple"->Phenomenon.PURPLE;case "jujutsuvfx:furnace"->Phenomenon.FIRE;
             default->null;};

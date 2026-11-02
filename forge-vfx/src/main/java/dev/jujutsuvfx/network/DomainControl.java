@@ -43,22 +43,28 @@ public record DomainControl(int action, int session, double x, double y, double 
                 context.enqueueWork(()->dev.jujutsuvfx.server.TechniqueTerrainRules.handle(packet,context.player())));
         event.registrar("2").optional().playToClient(VfxSettingsState.TYPE,VfxSettingsState.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.client.VfxConfigScreen.receive(packet)));
-        event.registrar("1").optional().playToServer(DamageSettingsRequest.TYPE,DamageSettingsRequest.CODEC,(packet,context)->
+        event.registrar("2").optional().playToServer(DamageSettingsRequest.TYPE,DamageSettingsRequest.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.server.TechniqueDamageSettings.handle(packet,context.player())));
-        event.registrar("1").optional().playToClient(DamageSettingsState.TYPE,DamageSettingsState.CODEC,(packet,context)->
+        event.registrar("2").optional().playToClient(DamageSettingsState.TYPE,DamageSettingsState.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.client.TechniqueDamageScreen.receive(packet)));
         event.registrar("1").optional().playToServer(CameraAudio.TYPE,CameraAudio.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.server.CinematicAudio.handle(packet,context.player())));
-        event.registrar("1").optional().playToServer(DomainSettingsRequest.TYPE,DomainSettingsRequest.CODEC,(packet,context)->
+        event.registrar("2").optional().playToServer(DomainSettingsRequest.TYPE,DomainSettingsRequest.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.server.DomainDurationSettings.handle(packet,context.player())));
-        event.registrar("1").optional().playToClient(DomainSettingsState.TYPE,DomainSettingsState.CODEC,(packet,context)->
+        event.registrar("2").optional().playToClient(DomainSettingsState.TYPE,DomainSettingsState.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.client.DomainSettingsScreen.receive(packet)));
+        event.registrar("1").optional().playToClient(UzumakiState.TYPE,UzumakiState.CODEC,(packet,context)->
+                context.enqueueWork(()->dev.jujutsuvfx.client.PlayerUzumakiRenderer.receive(packet)));
         FurnaceControl.registerPayloads(event);
         TechniqueControl.registerPayloads(event);
         FistImpact.registerPayloads(event);
         SukunaCut.registerPayloads(event);
         event.registrar("1").optional().playToClient(WorldCutEffect.TYPE,WorldCutEffect.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.client.WorldCutRenderer.receive(packet)));
+        event.registrar("1").optional().playToServer(YutaCatEdit.TYPE,YutaCatEdit.CODEC,(packet,context)->
+                context.enqueueWork(()->dev.jujutsuvfx.server.YutaCatControl.edit(packet,context.player())));
+        event.registrar("1").optional().playToClient(YutaCatView.TYPE,YutaCatView.CODEC,(packet,context)->
+                context.enqueueWork(()->dev.jujutsuvfx.client.YutaCatScreen.receive(packet)));
         event.registrar("1").optional().playToServer(GojoCatEdit.TYPE,GojoCatEdit.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.server.GojoCatControl.edit(packet,context.player())));
         event.registrar("1").optional().playToClient(GojoCatView.TYPE,GojoCatView.CODEC,(packet,context)->

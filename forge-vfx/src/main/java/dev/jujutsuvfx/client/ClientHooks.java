@@ -19,6 +19,9 @@ import java.io.IOException;
 public final class ClientHooks {
     @SubscribeEvent
     public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(VfxEntities.GETO_CAT.get(),GetoCatRenderer::new);
+        event.registerEntityRenderer(VfxEntities.CURSED_SPIRIT.get(),CursedSpiritRenderer::new);
+        event.registerEntityRenderer(VfxEntities.YUTA_CAT.get(), YutaCatRenderer::new);
         event.registerEntityRenderer(VfxEntities.GOJO_CAT.get(), context -> new SorcererCatRenderer<>(context, false));
         event.registerEntityRenderer(VfxEntities.SUKUNA_CAT.get(), context -> new SorcererCatRenderer<>(context, true));
         event.registerEntityRenderer(VfxEntities.MAHORAGA_CAT.get(), context -> new SorcererCatRenderer<>(context, "mahoraga_cat"));
@@ -28,7 +31,7 @@ public final class ClientHooks {
         net.minecraftforge.fml.ModLoadingContext.get().registerExtensionPoint(
                 net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
                 () -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory((mc,parent)->new VfxConfigScreen(parent)));
-        event.enqueueWork(() -> { ClientEvents.installSkillItems(); SukunaSlashHands.install(); PlayfulCloudHands.install(); });
+        event.enqueueWork(() -> { ClientEvents.installSkillItems(); SukunaSlashHands.install(); PlayfulCloudHands.install(); YutaKatanaHands.install(); });
     }
     @SubscribeEvent
     public static void keyMappings(net.minecraftforge.client.event.RegisterKeyMappingsEvent event) {
@@ -36,14 +39,26 @@ public final class ClientHooks {
         CatCinematicCamera.registerKeys(event);
     }
     @SubscribeEvent
-    public static void layers(EntityRenderersEvent.AddLayers event) { CursedFistHands.addLayers(event); PurpleChargeHands.addLayers(event); }
+    public static void layers(EntityRenderersEvent.AddLayers event) { CursedFistHands.addLayers(event); PurpleChargeHands.addLayers(event); PlayerDanceClient.addLayers(event); }
     @SubscribeEvent
     public static void shaders(RegisterShadersEvent event) throws IOException {
+        SpiritTextures.clear();
         RenderDiagnostics.beginReload();
         registerLighting(event);
+        GetoVortexMaterial.setShader(null);
+        YutaGetoFinaleMaterial.setShader(null);
+        YutaGetoFinaleMaterial.setGlowShader(null);
+        load(event,"yuta_geto_finale",DefaultVertexFormat.POSITION_TEX_COLOR,YutaGetoFinaleMaterial::setShader);
+        load(event,"yuta_geto_finale_glow",DefaultVertexFormat.POSITION_TEX_COLOR,YutaGetoFinaleMaterial::setGlowShader);
+        load(event,"geto_vortex",DefaultVertexFormat.POSITION_TEX_COLOR,GetoVortexMaterial::setShader);
+        load(event, "yuta_domain", DefaultVertexFormat.POSITION_TEX_COLOR, YutaDomainRenderer::setShader);
+        load(event, "cursed_speech", DefaultVertexFormat.POSITION_TEX_COLOR, CursedSpeechRenderer::setShader);
+        load(event, "cursed_speech_air", DefaultVertexFormat.POSITION_TEX_COLOR, CursedSpeechRenderer::setAirShader);
         registerInfinity(event);
         BlastWarningRenderer.setShader(null);
         load(event, "blast_warning", DefaultVertexFormat.POSITION_TEX_COLOR, BlastWarningRenderer::setShader);
+        load(event, "world_cut_air", DefaultVertexFormat.POSITION_TEX_COLOR, WorldCutBladeRenderer::setAirShader);
+        load(event, "world_cut_blade", DefaultVertexFormat.POSITION_TEX_COLOR, WorldCutBladeRenderer::setShader);
         MahoragaBladeRenderer.setShader(null);
         try {
             load(event, "mahoraga_blade", DefaultVertexFormat.POSITION_TEX_COLOR, MahoragaBladeRenderer::setShader);
@@ -55,6 +70,8 @@ public final class ClientHooks {
         load(event, "shrine_focus", DefaultVertexFormat.POSITION_TEX_COLOR, ClientShrineFocus::setShader);
         load(event, "unlimited_purple_volume", DefaultVertexFormat.POSITION_TEX_COLOR, UnlimitedPurpleEffects::setVolume);
         load(event, "unlimited_purple_composite", DefaultVertexFormat.POSITION_TEX_COLOR, UnlimitedPurpleEffects::setComposite);
+        load(event, "yuta_geto_clash_volume", DefaultVertexFormat.POSITION_TEX_COLOR, YutaGetoClashEffects::setVolume);
+        load(event, "yuta_geto_clash_composite", DefaultVertexFormat.POSITION_TEX_COLOR, YutaGetoClashEffects::setComposite);
         FirstPersonSkin.setShader(null);
         try{
             load(event, "first_person_skin", DefaultVertexFormat.NEW_ENTITY, FirstPersonSkin::setShader);

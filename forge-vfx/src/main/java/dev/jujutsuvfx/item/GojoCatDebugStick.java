@@ -22,8 +22,11 @@ public final class GojoCatDebugStick extends Item {
     }
 
     @Override public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
-        if (!(target instanceof SorcererCat cat)) return InteractionResult.PASS;
-        if (player instanceof ServerPlayer serverPlayer) GojoCatControl.open(serverPlayer, cat);
+        if (target instanceof dev.jujutsuvfx.entity.YutaCat cat) {
+            if (player instanceof ServerPlayer serverPlayer) dev.jujutsuvfx.server.YutaCatControl.open(serverPlayer, cat);
+        } else if (target instanceof SorcererCat cat) {
+            if (player instanceof ServerPlayer serverPlayer) GojoCatControl.open(serverPlayer, cat);
+        } else return InteractionResult.PASS;
         // One physical click opens one session, even while the use button is still held.
         player.startUsingItem(hand);
         return InteractionResult.sidedSuccess(player.level().isClientSide);

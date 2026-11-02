@@ -75,7 +75,7 @@ public final class CatCinematicCamera {
                 InputConstants.Type.KEYSYM,code,"key.categories.jujutsuvfx");
         event.register(key);return key;
     }
-    public static boolean active(){return subject!=null;}
+    public static boolean active(){return subject!=null||YutaGetoCamera.active();}
     public static SorcererCat protagonist(){return active()?protagonist:null;}
     static void resetAutomaticMemory(){AUTO_START.clear();automaticDuel=null;shrineQuietUntil=Long.MIN_VALUE;}
     /** Damage tilt includes burning ticks; it should never shake a camera attached to Gojo. */
@@ -95,23 +95,26 @@ public final class CatCinematicCamera {
             shrineQuietUntil=now+12; // Include the last cut's ten-tick vanilla hurt tail.
         return now<=shrineQuietUntil;
     }
-    static void disableAutomatic(){if(automaticDuel!=null)stop(false);DuelScenes.clear();}
+    static void disableAutomatic(){if(automaticDuel!=null||YutaGetoCamera.active())stop(false);DuelScenes.clear();}
     static void authoritativeEnd(long duel){if(active()&&automaticDuel!=null&&automaticDuel==duel)stop(false);}
     /** A boom microphone near the actor keeps dialogue and punches audible during wide shots. */
     public static Vec3 audioPosition(Vec3 camera){
-        if(!active()||!live(subject))return camera;
-        Vec3 head=subject.getEyePosition(),offset=camera.subtract(head);
+        LivingEntity actor=YutaGetoCamera.active()?YutaGetoCamera.audioSubject():subject;
+        if(!active()||!live(actor))return camera;
+        Vec3 head=actor.getEyePosition(),offset=camera.subtract(head);
         return head.add(offset.scale(Math.min(1,6/Math.max(.001,offset.length()))));
     }
     private static void audio(boolean stopping){
         Minecraft mc=Minecraft.getInstance();
         if(mc.getConnection()==null||!mc.getConnection().getConnection().isConnected()||!mc.getConnection().hasChannel(dev.jujutsuvfx.network.CameraAudio.TYPE))return;
-        dev.jujutsuvfx.network.CameraAudio packet=new dev.jujutsuvfx.network.CameraAudio(stopping?-1:subject.getId(),
+        LivingEntity actor=YutaGetoCamera.active()?YutaGetoCamera.audioSubject():subject;
+        dev.jujutsuvfx.network.CameraAudio packet=new dev.jujutsuvfx.network.CameraAudio(stopping?-1:actor.getId(),
                 stopping?Vec3.ZERO:audioPosition(viewpoint()));
         net.neoforged.neoforge.network.PacketDistributor.sendToServer(packet);audioTick=ClientEffectClock.ticks();
     }
     static Vec3 viewpoint(){
         Minecraft mc=Minecraft.getInstance();
+        if(YutaGetoCamera.active())return YutaGetoCamera.viewpoint();
         return active()?(frame!=null?frame.eye():subject.getEyePosition()):mc.player==null?Vec3.ZERO:mc.player.position();
     }
     private static void message(String key,Object... args){
@@ -134,6 +137,7 @@ public final class CatCinematicCamera {
     private static int start(SorcererCat next){
         Minecraft mc=Minecraft.getInstance();
         if(next==null||!live(next)||mc.player==null||!mc.player.isAlive()){message("missing");return 0;}
+        if(YutaGetoCamera.active())stop(false);
         if(!active()){
             previousCamera=mc.getCameraEntity();previousType=mc.options.getCameraType();world=mc.level;
             var camera=mc.gameRenderer.getMainCamera();eye=v(camera.getPosition());
@@ -148,13 +152,17 @@ public final class CatCinematicCamera {
         mc.options.setCameraType(CameraType.FIRST_PERSON);mc.setCameraEntity(next);
         audio(false);announce();return 1;
     }
-    private static void announce(){message("selected",subject.getDisplayName(),Component.translatable("camera.jujutsuvfx.mode."+mode.name().toLowerCase(java.util.Locale.ROOT)));}
+    private static void announce(){message("selected",(YutaGetoCamera.active()?YutaGetoCamera.subject():subject).getDisplayName(),Component.translatable("camera.jujutsuvfx.mode."+mode.name().toLowerCase(java.util.Locale.ROOT)));}
     public static int stop(boolean notify){
         Minecraft mc=Minecraft.getInstance();
         if(!active())return 0;
+        if(notify){YutaGetoCamera.suppressNearby();DuelScenes.suppressKnown(AUTO_START);}
+        if(YutaGetoCamera.active()){
+            audio(true);audioTick=Long.MIN_VALUE;
+            int result=YutaGetoCamera.stop();if(notify)message("off");return result;
+        }
         DuelScenes.Scene story=DuelScenes.forActor(protagonist);
         if(story!=null)AUTO_START.suppress(story.packet().duel());
-        if(notify)DuelScenes.suppressKnown(AUTO_START);
         automaticDuel=null;
         audio(true);audioTick=Long.MIN_VALUE;
         if(mc.getCameraEntity()==subject)mc.setCameraEntity(live(previousCamera)?previousCamera:mc.player);
@@ -167,16 +175,27 @@ public final class CatCinematicCamera {
     private static int toggle(){
         if(active())return stop(true);
         Minecraft mc=Minecraft.getInstance();
+        if(mc.hitResult instanceof EntityHitResult hit&&hit.getEntity() instanceof dev.jujutsuvfx.entity.YutaCat yuta){
+            int result=YutaGetoCamera.start(yuta,false);if(result>0){audio(false);announce();return result;}
+        }
         SorcererCat picked=mc.hitResult instanceof EntityHitResult hit&&hit.getEntity() instanceof SorcererCat cat&&cat.isGojo()?cat:null;
-        return start(picked!=null?picked:nearest(0));
+        SorcererCat gojo=picked!=null?picked:nearest(0);
+        if(gojo==null){int result=startYuta();if(result>0)return result;}
+        return start(gojo);
+    }
+    private static int startYuta(){
+        if(subject!=null)stop(false);
+        int result=YutaGetoCamera.nearest();if(result>0){audio(false);announce();}return result;
     }
     private static int next(){
         if(!active())return toggle();
+        if(YutaGetoCamera.active()){mode=Mode.AUTO;YutaGetoCamera.resetFrame();announce();return 1;}
         // F7 returns to the leading Gojo; authored reaction shots handle the other actors.
         mode=Mode.AUTO;return start(live(protagonist)?protagonist:nearest(0));
     }
     private static int mode(Mode next){
         mode=next;frame=null;lastSample=Double.NaN;collisionTick=Long.MIN_VALUE;
+        if(YutaGetoCamera.active())YutaGetoCamera.resetFrame();
         if(!active())return toggle();announce();return 1;
     }
     @SubscribeEvent public static void commands(RegisterClientCommandsEvent event){
@@ -184,6 +203,7 @@ public final class CatCinematicCamera {
                 .then(Commands.literal("off").executes(c->stop(true)))
                 .then(Commands.literal("next").executes(c->next()))
                 .then(Commands.literal("gojo").executes(c->start(nearest(0))))
+                .then(Commands.literal("yuta").executes(c->startYuta()))
                 .then(Commands.literal("auto").executes(c->mode(Mode.AUTO)))
                 .then(Commands.literal("shoulder").executes(c->mode(Mode.SHOULDER)))
                 .then(Commands.literal("pov").executes(c->mode(Mode.POV)))
@@ -191,10 +211,11 @@ public final class CatCinematicCamera {
     }
     @SubscribeEvent public static void tick(ClientTickEvent.Post event){
         Minecraft mc=Minecraft.getInstance();
-        if(active()&&mc.level==world&&mc.getCameraEntity()==subject&&!live(subject)&&live(protagonist))retarget(protagonist,true);
-        if(active()&&(mc.level!=world||!live(mc.player)||!live(subject)||mc.getCameraEntity()!=subject
+        YutaGetoCamera.tick();
+        if(subject!=null&&mc.level==world&&mc.getCameraEntity()==subject&&!live(subject)&&live(protagonist))retarget(protagonist,true);
+        if(subject!=null&&(mc.level!=world||!live(mc.player)||!live(subject)||mc.getCameraEntity()!=subject
                 ||mc.options.getCameraType()!=CameraType.FIRST_PERSON))stop(true);
-        if(active())direct();
+        if(subject!=null)direct();
         if(active()&&(audioTick==Long.MIN_VALUE||ClientEffectClock.ticks()-audioTick>=4))audio(false);
         while(toggleKey!=null&&toggleKey.consumeClick())if(mc.screen==null)toggle();
         while(nextKey!=null&&nextKey.consumeClick())if(mc.screen==null)next();
@@ -205,7 +226,10 @@ public final class CatCinematicCamera {
         Minecraft mc=Minecraft.getInstance();
         if(active()||mc.screen!=null||mc.level==null||!live(mc.player)||mc.getCameraEntity()!=mc.player)return;
         DuelScenes.Scene scene=DuelScenes.automaticCandidate(AUTO_START);
-        if(scene==null)return;
+        if(scene==null){
+            if(YutaGetoCamera.automatic()>0){mode=Mode.AUTO;audio(false);announce();}
+            return;
+        }
         long duel=scene.packet().duel();
         if(!AUTO_START.claim(duel,true))return;
         mode=Mode.AUTO;
@@ -364,6 +388,7 @@ public final class CatCinematicCamera {
     }
     private static boolean openingDomain(CatSpellState cast){return cast!=null&&CatSpell.domain(cast.kind())&&cast.age()<65;}
     public static Frame sample(Entity entity,float partial){
+        if(YutaGetoCamera.active())return YutaGetoCamera.sample(entity,partial,mode,side);
         Minecraft mc=Minecraft.getInstance();
         if(!active()||entity!=subject||mc.level!=world||!live(subject))return null;
         if(mc.isPaused()&&frame!=null)return frame;

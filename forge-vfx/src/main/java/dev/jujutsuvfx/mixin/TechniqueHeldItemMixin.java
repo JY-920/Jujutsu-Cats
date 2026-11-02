@@ -20,7 +20,10 @@ abstract class TechniqueHeldItemMixin {
     @Inject(method="renderArmWithItem",at=@At("HEAD"),cancellable=true)
     private void jujutsu$emptyHand(LivingEntity actor,ItemStack stack,ItemDisplayContext context,HumanoidArm arm,
                                    PoseStack poses,MultiBufferSource buffers,int light,CallbackInfo ci){
-        if(actor instanceof Player&&stack.getItem() instanceof dev.jujutsuvfx.item.PlayfulCloudItem){
+        if(actor instanceof Player&&stack.getItem() instanceof dev.jujutsuvfx.item.YutaKatanaItem){
+            dev.jujutsuvfx.client.YutaKatanaHands.thirdPerson(actor,arm,poses,buffers,light);ci.cancel();
+        }else if(actor instanceof Player&&actor.isUsingItem()&&actor.getUseItem().getItem() instanceof dev.jujutsuvfx.item.YutaKatanaItem&&stack==actor.getOffhandItem()){ci.cancel();
+        }else if(actor instanceof Player&&stack.getItem() instanceof dev.jujutsuvfx.item.PlayfulCloudItem){
             dev.jujutsuvfx.client.PlayfulCloudHands.thirdPerson(actor,arm,poses,buffers,light);ci.cancel();
         }else if(actor instanceof Player&&VfxItems.isTechniqueHand(stack))ci.cancel();
     }

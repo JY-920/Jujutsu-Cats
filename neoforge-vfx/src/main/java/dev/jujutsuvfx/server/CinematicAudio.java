@@ -2,6 +2,9 @@ package dev.jujutsuvfx.server;
 
 import dev.jujutsuvfx.core.CameraAudioPolicy;
 import dev.jujutsuvfx.entity.SorcererCat;
+import dev.jujutsuvfx.entity.YutaCat;
+import dev.jujutsuvfx.entity.GetoCat;
+import net.minecraft.world.entity.LivingEntity;
 import dev.jujutsuvfx.network.CameraAudio;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -26,7 +29,7 @@ public final class CinematicAudio {
         Map<UUID,Watch> watchers=WATCHERS.computeIfAbsent(server,key->new HashMap<>());
         if(packet.actor()<0){watchers.remove(player.getUUID());return;}
         Vec3 point=packet.point();long now=server.getTickCount();Watch previous=watchers.get(player.getUUID());
-        if(!player.isAlive()||!finite(point)||!(player.serverLevel().getEntity(packet.actor()) instanceof SorcererCat cat)
+        if(!player.isAlive()||!finite(point)||!(player.serverLevel().getEntity(packet.actor()) instanceof LivingEntity cat)||!actor(cat)
                 ||!cat.isAlive()||cat.isRemoved()||cat.distanceToSqr(player)>128*128||cat.getEyePosition().distanceToSqr(point)>16*16){
             watchers.remove(player.getUUID());return;
         }
@@ -48,7 +51,7 @@ public final class CinematicAudio {
                 watchers.remove(player.getUUID());continue;
             }
             if(!dimension.equals(watch.dimension))continue;
-            if(!(player.serverLevel().getEntity(watch.actor) instanceof SorcererCat cat)||!cat.isAlive()||cat.distanceToSqr(player)>128*128){
+            if(!(player.serverLevel().getEntity(watch.actor) instanceof LivingEntity cat)||!actor(cat)||!cat.isAlive()||cat.distanceToSqr(player)>128*128){
                 watchers.remove(player.getUUID());continue;
             }
             Vec3 microphone=cat.getEyePosition().add(watch.offset);
@@ -63,9 +66,10 @@ public final class CinematicAudio {
         long now=server.getTickCount();
         if(watch==null||now<watch.updated||now-watch.updated>40||!player.isAlive()
                 ||!player.level().dimension().equals(watch.dimension))return false;
-        if(!(player.serverLevel().getEntity(watch.actor) instanceof SorcererCat cat)||!cat.isAlive()
+        if(!(player.serverLevel().getEntity(watch.actor) instanceof LivingEntity cat)||!actor(cat)||!cat.isAlive()
                 ||cat.isRemoved()||cat.distanceToSqr(player)>128*128)return false;
         return cat.getEyePosition().add(watch.offset).distanceToSqr(point)<=limit;
     }
+    private static boolean actor(LivingEntity entity){return entity instanceof SorcererCat||entity instanceof YutaCat||entity instanceof GetoCat;}
     private static boolean finite(Vec3 point){return Double.isFinite(point.x)&&Double.isFinite(point.y)&&Double.isFinite(point.z);}
 }

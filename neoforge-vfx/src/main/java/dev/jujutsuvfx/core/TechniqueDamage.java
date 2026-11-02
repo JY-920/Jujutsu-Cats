@@ -4,7 +4,7 @@ package dev.jujutsuvfx.core;
 public enum TechniqueDamage {
     BLUE("blue"), RED("red"), PURPLE_SMALL("purple_small"), PURPLE_LARGE("purple_large"),
     PURPLE_AMPLIFIED("purple_amplified"), PURPLE_UNLIMITED("purple_unlimited"),
-    DISMANTLE("dismantle"), CLEAVE("cleave"), FURNACE("furnace"), SHRINE("shrine");
+    DISMANTLE("dismantle"), CLEAVE("cleave"), FURNACE("furnace"), SHRINE("shrine"), YUTA_DOMAIN("yuta_domain"), UZUMAKI("maximum_uzumaki"), LOVE_BEAM("love_beam");
 
     private final String key;
     TechniqueDamage(String key) { this.key=key; }

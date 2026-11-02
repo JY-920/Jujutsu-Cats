@@ -27,7 +27,7 @@ import org.joml.Matrix4f;
 
 import static dev.jujutsuvfx.network.SkillGesture.*;
 
-/** Shared first/third-person gestures for the four skills without player arm animations. */
+/** Shared first/third-person gestures for skills with synchronized player arm animations. */
 @EventBusSubscriber(modid=JujutsuVfx.ID,value=Dist.CLIENT)
 public final class TechniqueHands {
     private static final Map<UUID,Motion> MOTIONS=new HashMap<>();
@@ -38,12 +38,12 @@ public final class TechniqueHands {
         double release=Double.POSITIVE_INFINITY;long received;int seenAge=-1;
         Motion(int session,int kind,InteractionHand hand,double born,boolean guided,boolean local,ItemStack bound,boolean authoritative) {
             this.session=session;this.kind=kind;this.hand=hand;this.born=born;this.guided=guided;this.local=local;this.bound=bound;
-            autoRelease=kind==BLUE?(guided||!local?200:14):kind==FURNACE?(authoritative?80:32):26;received=ClientEffectClock.ticks();
+            autoRelease=kind==BLUE?(guided||!local?200:14):kind==FURNACE?(authoritative?80:32):(kind==UZUMAKI||kind==LOVE_BEAM)?72000:kind==SPEECH?8:kind==YUTA?40:26;received=ClientEffectClock.ticks();
         }
         double age(float partial){return Math.max(0,ClientEffectClock.ticks()+partial-born);}
     }
     private record Pose(int kind,InteractionHand hand,float age,float release,float weight) {
-        boolean twoHands(){return kind==FURNACE||kind==SHRINE;}
+        boolean twoHands(){return kind==FURNACE||kind==SHRINE||kind==YUTA||kind==UZUMAKI||kind==LOVE_BEAM;}
     }
     private TechniqueHands() {}
     private static void ensureWorld() {
@@ -71,13 +71,13 @@ public final class TechniqueHands {
     static void interrupt(){ensureWorld();if(localPlayer!=null)MOTIONS.remove(localPlayer.getUUID());}
     public static void receive(SkillGesture packet) {
         ensureWorld();Minecraft mc=Minecraft.getInstance();
-        if(mc.level==null||packet.kind()<BLUE||packet.kind()>SHRINE||packet.hand()>1||packet.age()<0||packet.age()>1200
+        if(mc.level==null||packet.kind()<BLUE||packet.kind()>LOVE_BEAM||packet.hand()>1||packet.age()<0||packet.age()>72000
                 ||packet.release()<-2||packet.release()>packet.age())return;
         if(!(mc.level.getEntity(packet.actor()) instanceof AbstractClientPlayer player)||!player.getUUID().equals(packet.owner()))return;
         Motion motion=MOTIONS.get(packet.owner());
         boolean same=motion!=null&&motion.kind==packet.kind()&&motion.session==packet.session();
-        // The local prediction owns its start. A late ACK never resurrects or replaces another cast.
-        if(player==mc.player&&!same)return;
+        // Predicted skills own their starts; speech/Yuta start after server acceptance.
+        if(player==mc.player&&!same&&packet.kind()<SPEECH)return;
         if(packet.release()==-2){if(same)MOTIONS.remove(packet.owner());return;}
         if(same&&packet.age()<motion.seenAge)return;
         if(!same) {
@@ -127,7 +127,8 @@ public final class TechniqueHands {
         if(pose!=null&&event.getHand()!=pose.hand){if(pose.twoHands()){event.setCanceled(true);return;}pose=null;}
         if(pose==null){
             boolean held=matches(event.getItemStack(),BLUE)||matches(event.getItemStack(),FURNACE)
-                    ||matches(event.getItemStack(),VOID)||matches(event.getItemStack(),SHRINE);
+                    ||matches(event.getItemStack(),VOID)||matches(event.getItemStack(),SHRINE)
+                    ||matches(event.getItemStack(),LOVE_BEAM)||matches(event.getItemStack(),UZUMAKI)||matches(event.getItemStack(),YUTA)||matches(event.getItemStack(),SPEECH);
             boolean empty=event.getHand()==InteractionHand.MAIN_HAND&&event.getItemStack().isEmpty()&&ClientEvents.visualVoid()!=null;
             if(!held&&!empty)return;
             pose=new Pose(-1,event.getHand(),0,-1,0);
@@ -150,6 +151,19 @@ public final class TechniqueHands {
                 if(support){x=mix(.15f,.30f,draw);y=-.24f;z=mix(-.92f,-.38f,draw)+.10f*kick;pitch=-53;yaw=30;roll=38;twist=-28;}
                 else{x=.43f;y=-.29f;z=-1.12f+.08f*kick;pitch=-84+5*kick;yaw=-3;roll=5;}
             }else if(pose.kind==VOID){x=.22f;y=-.20f;z=-.66f;pitch=-38;yaw=7;roll=12;twist=18;}
+            else if(pose.kind==SPEECH){x=.10f+.16f*kick;y=-.12f;z=-.48f-.24f*kick;pitch=-28-32*kick;yaw=24;roll=24;twist=10;}
+            else if(pose.kind==UZUMAKI){
+                if(support){x=.28f;y=-.24f;z=-.78f-.12f*kick;pitch=-70;yaw=22;roll=24;twist=-20;}
+                else{x=.28f;y=-.24f;z=-.87f-.22f*kick;pitch=-77-7*kick;yaw=4;roll=15;twist=24;}
+            }else if(pose.kind==LOVE_BEAM){
+                float push=smooth((pose.age-64)/8);
+                x=mix(.18f,.30f,push);y=mix(-.34f,-.24f,push);z=mix(-.50f,-1.06f,push);
+                pitch=mix(-48,-79,push);yaw=support?20:5;roll=support?25:12;twist=support?-25:30;
+            }else if(pose.kind==YUTA){
+                // Upright lead hand and horizontal support across the wrist form Yuta's own seal.
+                if(support){x=.02f;y=-.39f;z=-.62f;pitch=-47;yaw=36;roll=72;twist=-20;}
+                else{x=.12f;y=-.18f;z=-.67f;pitch=-27;yaw=12;roll=9;twist=26;}
+            }
             else{x=.115f;y=-.31f+(support?.02f:0);z=-.72f+(support?.055f:0);pitch=-49;yaw=23;roll=39;twist=-35;}
             stack.translate(side*mix(support?.47f:.39f,x,w),mix(support?-.79f:-.35f,y,w),mix(-.75f,z,w));
             stack.mulPose(Axis.YP.rotationDegrees(side*mix(10,yaw,w)));
@@ -175,6 +189,18 @@ public final class TechniqueHands {
             blend(main,-1.58f+pitch*.85f+kick*.08f,yaw-side*.23f,side*.10f,w);
             blend(other,-1.72f+pitch*.55f,yaw+side*(.35f+.40f*draw),-side*.12f,w);
         }else if(pose.kind==VOID)blend(main,-2.10f+pitch*.40f,yaw*.60f-side*.22f,side*.14f,w);
+        else if(pose.kind==SPEECH)blend(main,-2.35f+pitch*.45f+kick*.55f,yaw*.55f-side*.32f,side*.22f,w);
+        else if(pose.kind==UZUMAKI){
+            blend(main,-1.52f+pitch*.8f-kick*.18f,yaw-side*.24f,side*.22f,w);
+            blend(other,-1.45f+pitch*.8f-kick*.12f,yaw+side*.34f,-side*.24f,w);
+        }else if(pose.kind==LOVE_BEAM){
+            float push=smooth((pose.age-64)/8);
+            blend(main,mix(-1.10f,-1.59f,push)+pitch*.8f,yaw-side*.22f,side*.18f,w);
+            blend(other,mix(-1.05f,-1.54f,push)+pitch*.8f,yaw+side*.28f,-side*.20f,w);
+        }else if(pose.kind==YUTA){
+            blend(main,-2.05f+pitch*.25f,yaw*.35f-side*.36f,side*.12f,w);
+            blend(other,-1.48f+pitch*.20f,yaw*.30f+side*.88f,-side*.52f,w);
+        }
         else{
             blend(main,-1.92f+pitch*.35f,yaw*.45f-side*.50f,side*.29f,w);
             blend(other,-1.92f+pitch*.35f,yaw*.45f+side*.50f,-side*.29f,w);
@@ -183,6 +209,7 @@ public final class TechniqueHands {
     }
     private static boolean matches(ItemStack stack,int kind) {
         return switch(kind){case BLUE->stack.is(VfxItems.BLUE.get());case FURNACE->stack.is(VfxItems.FUGA.get());
+            case LOVE_BEAM->stack.is(VfxItems.LOVE_BEAM.get());case UZUMAKI->stack.is(VfxItems.MAXIMUM_UZUMAKI.get());case SPEECH->stack.is(VfxItems.CURSED_SPEECH.get());case YUTA->stack.is(VfxItems.YUTA_DOMAIN.get());
             case VOID->stack.is(VfxItems.UNLIMITED_VOID.get());case SHRINE->stack.is(VfxItems.MALEVOLENT_SHRINE.get());default->false;};
     }
     private static HumanoidArm arm(AbstractClientPlayer player,InteractionHand hand){return hand==InteractionHand.MAIN_HAND?player.getMainArm():player.getMainArm().getOpposite();}

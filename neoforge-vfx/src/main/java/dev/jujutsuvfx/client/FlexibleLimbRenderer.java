@@ -13,6 +13,8 @@ import java.util.*;
 /** Native skin UVs, sleeves and armor, tessellated only on the limbs currently doing martial arts. */
 public final class FlexibleLimbRenderer {
     private record Bend(float angle,float center) {}
+    private static final Map<ModelPart,CatMeshBend> TORSOS=new WeakHashMap<>();
+    static void torso(ModelPart part,CatMeshBend bend){if(bend==null)TORSOS.remove(part);else TORSOS.put(part,bend);}
     private static final Map<ModelPart,Bend> BENDS=new WeakHashMap<>();
     private static final Map<ModelPart.Cube,V[]> MESHES=new WeakHashMap<>();
     private static final class V {float x,y,z,u,v,nx,ny,nz;}
@@ -22,13 +24,23 @@ public final class FlexibleLimbRenderer {
         else BENDS.put(part,new Bend(degrees*(float)Math.PI/180,(leg?6:4)/16f));
     }
     public static void copy(ModelPart source,ModelPart target){
+        CatMeshBend torso=TORSOS.get(source);if(torso==null)TORSOS.remove(target);else TORSOS.put(target,torso);
         Bend b=BENDS.get(source);if(b==null)BENDS.remove(target);else BENDS.put(target,b);
     }
     public static void clear(HumanoidModel<?> model){
+        TORSOS.remove(model.body);if(model instanceof PlayerModel<?> p)TORSOS.remove(p.jacket);
         BENDS.remove(model.rightArm);BENDS.remove(model.leftArm);BENDS.remove(model.rightLeg);BENDS.remove(model.leftLeg);
         if(model instanceof PlayerModel<?> p){BENDS.remove(p.rightSleeve);BENDS.remove(p.leftSleeve);BENDS.remove(p.rightPants);BENDS.remove(p.leftPants);}
     }
     public static boolean render(ModelPart part,List<ModelPart.Cube> cubes,PoseStack.Pose pose,VertexConsumer out,int light,int overlay,int color){
+        CatMeshBend torso=TORSOS.get(part);
+        if(torso!=null){
+            for(ModelPart.Cube cube:cubes)for(V v:MESHES.computeIfAbsent(cube,FlexibleLimbRenderer::mesh)){
+                Vector3f n=torso.normal(new Vector3f(v.nx,v.ny,v.nz),v.y,v.z),p=torso.position(new Vector3f(v.x,v.y,v.z));
+                out.addVertex(pose,p.x,p.y,p.z).setColor(color).setUv(v.u,v.v).setOverlay(overlay).setLight(light).setNormal(pose,n.x,n.y,n.z);
+            }
+            return true;
+        }
         Bend b=BENDS.get(part);if(b==null)return false;
         for(ModelPart.Cube cube:cubes)for(V v:MESHES.computeIfAbsent(cube,FlexibleLimbRenderer::mesh)){
             var p=LimbCurve.bend(v.y,v.z,b.angle,b.center);

@@ -32,7 +32,7 @@ final class InfinityBarrierRenderer {
     private static long lastDraw;
     private record Part(BufferBuilder.RenderedBuffer mesh,ResourceLocation texture) {}
     private record Capture(List<Part> parts,Matrix4f view,Matrix4f projection,float strength,float width,
-                           float seed,boolean healing,Vec3 center,float bodyWidth,float bodyHeight) {}
+                           float seed,boolean healing,boolean purple,Vec3 center,float bodyWidth,float bodyHeight) {}
     static void setShader(ShaderInstance value){clear();shader=value;}
     static void setMask(ShaderInstance value){clear();maskShader=value;}
     static void setCross(ShaderInstance value){crossShader=value;}
@@ -94,7 +94,35 @@ final class InfinityBarrierRenderer {
         CAPTURES.put(cat.getUUID(),new Capture(parts,new Matrix4f(RenderSystem.getModelViewMatrix()),
                 new Matrix4f(RenderSystem.getProjectionMatrix()),strength,
                 (float)dev.jujutsuvfx.platform.Numbers.clamp(12/Math.sqrt(Math.max(1,distance)),.5,1.5),Math.floorMod(cat.getId(),251)/251f,
-                healing,new Vec3(Mth.lerp(partial,cat.xo,cat.getX()),Mth.lerp(partial,cat.yo,cat.getY())+cat.getBbHeight()*.5,
+                healing,false,new Vec3(Mth.lerp(partial,cat.xo,cat.getX()),Mth.lerp(partial,cat.yo,cat.getY())+cat.getBbHeight()*.5,
+                Mth.lerp(partial,cat.zo,cat.getZ())),cat.getBbWidth(),cat.getBbHeight()));
+    }
+    static void captureYuta(dev.jujutsuvfx.entity.YutaCat cat,YutaCatModel model,PoseStack poses,float partial,
+                            ResourceLocation body,ResourceLocation details){
+        Minecraft mc=Minecraft.getInstance();
+        if(!accepting||shader==null||maskShader==null||mc.level!=cat.level()||!cat.domainEmpowered()||!cat.isAlive()||cat.isInvisible())return;
+        double distance=cat.distanceToSqr(mc.gameRenderer.getMainCamera().getPosition());
+        if(distance>96*96)return;
+        float strength=.92f;
+        int slot=0;
+        for(UUID id:CAPTURES.keySet()){if(id.equals(cat.getUUID()))break;slot++;}
+        if(slot>=LIMIT)return;
+        Capture previous=CAPTURES.get(cat.getUUID());
+        if(previous!=null){for(Part part:previous.parts)part.mesh.release();previous.parts.clear();}
+        List<Part> parts=new ArrayList<>(2);
+        for(int material=0;material<2;material++){
+            int index=slot*2+material;
+            if(STORAGE[index]==null)STORAGE[index]=new BufferBuilder(32768);
+            BufferBuilder vertices=dev.jujutsuvfx.platform.RenderBuffers.begin(STORAGE[index],VertexFormat.Mode.QUADS,DefaultVertexFormat.NEW_ENTITY);
+            model.renderMaterial(poses,vertices,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1,material);
+            BufferBuilder.RenderedBuffer data=vertices.endOrDiscardIfEmpty();
+            if(data!=null)parts.add(new Part(data,material==0?body:details));
+        }
+        if(parts.isEmpty()){CAPTURES.remove(cat.getUUID());return;}
+        CAPTURES.put(cat.getUUID(),new Capture(parts,new Matrix4f(RenderSystem.getModelViewMatrix()),
+                new Matrix4f(RenderSystem.getProjectionMatrix()),strength,
+                (float)dev.jujutsuvfx.platform.Numbers.clamp(12/Math.sqrt(Math.max(1,distance)),.5,1.5),Math.floorMod(cat.getId(),251)/251f,
+                false,true,new Vec3(Mth.lerp(partial,cat.xo,cat.getX()),Mth.lerp(partial,cat.yo,cat.getY())+cat.getBbHeight()*.5,
                 Mth.lerp(partial,cat.zo,cat.getZ())),cat.getBbWidth(),cat.getBbHeight()));
     }
     static void render(RenderLevelStageEvent event){
@@ -129,7 +157,7 @@ final class InfinityBarrierRenderer {
                     maskShader.safeGetUniform("CaptureProjection").set(capture.projection);
                     // Pack the green/white palette with its seed in the existing mask channel.
                     maskShader.safeGetUniform("OutlineData").set(capture.strength,capture.width/2,
-                            (capture.healing?.55f:0)+capture.seed*.4f);
+                            (capture.purple?.68f:capture.healing?.34f:0)+capture.seed*.24f);
                     for(var iterator=capture.parts.iterator();iterator.hasNext();){
                         Part part=iterator.next();iterator.remove();
                         maskShader.setSampler("SkinTexture",mc.getTextureManager().getTexture(part.texture).getId());

@@ -11,7 +11,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 /** Visual preferences belong to each client; terrain authority belongs to the current server. */
 public final class VfxConfig {
     public static final ModConfigSpec CLIENT, SERVER;
-    private static final ModConfigSpec.IntValue LIGHTING, MUSIC_VOLUME, VOID_SECONDS, SHRINE_SECONDS;
+    private static final ModConfigSpec.IntValue LIGHTING, MUSIC_VOLUME, VOID_SECONDS, SHRINE_SECONDS, YUTA_SECONDS;
     private static final EnumMap<TechniqueDamage, ModConfigSpec.IntValue> DAMAGE = new EnumMap<>(TechniqueDamage.class);
     private static final ModConfigSpec.BooleanValue FLASHES, DESTRUCTION, CLEAVE_PHYSICS, CINEMATIC, UNLIMITED_DESTRUCTION, MUSIC;
     static {
@@ -45,23 +45,29 @@ public final class VfxConfig {
                 .push("domainDuration");
         VOID_SECONDS = server.defineInRange("unlimitedVoidSeconds", DomainDuration.DEFAULT_SECONDS, DomainDuration.MIN_SECONDS, DomainDuration.MAX_SECONDS);
         SHRINE_SECONDS = server.defineInRange("malevolentShrineSeconds", DomainDuration.DEFAULT_SECONDS, DomainDuration.MIN_SECONDS, DomainDuration.MAX_SECONDS);
+        YUTA_SECONDS = server.defineInRange("yutaSeconds", 20, DomainDuration.MIN_SECONDS, DomainDuration.MAX_SECONDS);
         server.pop();
         SERVER = server.build();
     }
     private VfxConfig() {}
     public static int voidSeconds() { return SERVER.isLoaded() ? VOID_SECONDS.get() : DomainDuration.DEFAULT_SECONDS; }
     public static int shrineSeconds() { return SERVER.isLoaded() ? SHRINE_SECONDS.get() : DomainDuration.DEFAULT_SECONDS; }
+    public static int yutaSeconds() { return SERVER.isLoaded() ? YUTA_SECONDS.get() : 20; }
     public static int domainSeconds(int kind) { return kind == DomainVolume.UNLIMITED_VOID ? voidSeconds() : shrineSeconds(); }
-    /** Validate the whole transaction before modifying either value. */
+    /** Preserve the independently configured Yuta duration for callers editing the original domains. */
     public static void domainSeconds(int voidSeconds, int shrineSeconds) {
-        if (!DomainDuration.valid(voidSeconds) || !DomainDuration.valid(shrineSeconds))
+        domainSeconds(voidSeconds, shrineSeconds, yutaSeconds());
+    }
+    /** Validate the whole transaction before modifying any value. */
+    public static void domainSeconds(int voidSeconds, int shrineSeconds, int yutaSeconds) {
+        if (!DomainDuration.valid(voidSeconds) || !DomainDuration.valid(shrineSeconds) || !DomainDuration.valid(yutaSeconds))
             throw new IllegalArgumentException("Domain duration out of range");
         if (!SERVER.isLoaded()) throw new IllegalStateException("Server configuration is not loaded");
-        int oldVoid = voidSeconds(), oldShrine = shrineSeconds();
+        int oldVoid = voidSeconds(), oldShrine = shrineSeconds(), oldYuta = yutaSeconds();
         try {
-            VOID_SECONDS.set(voidSeconds); SHRINE_SECONDS.set(shrineSeconds); SERVER.save();
+            VOID_SECONDS.set(voidSeconds); SHRINE_SECONDS.set(shrineSeconds); YUTA_SECONDS.set(yutaSeconds); SERVER.save();
         } catch (RuntimeException failure) {
-            VOID_SECONDS.set(oldVoid); SHRINE_SECONDS.set(oldShrine); throw failure;
+            VOID_SECONDS.set(oldVoid); SHRINE_SECONDS.set(oldShrine); YUTA_SECONDS.set(oldYuta); throw failure;
         }
     }
     public static int damagePercent(TechniqueDamage technique) {

@@ -5,6 +5,9 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.jujutsuvfx.JujutsuVfx;
 import dev.jujutsuvfx.core.PlayfulCloudMotion;
+import dev.jujutsuvfx.core.PlayfulCloudPhysics;
+import com.mojang.blaze3d.systems.RenderSystem;
+import org.joml.Matrix4f;
 import dev.jujutsuvfx.core.PlayfulCloudMotion.Pose;
 import dev.jujutsuvfx.item.PlayfulCloudItem;
 import dev.jujutsuvfx.network.PlayfulCloudState;
@@ -26,6 +29,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -40,6 +44,8 @@ public final class PlayfulCloudHands {
     private static int firstPersonDepth;
     private static final class Motion {
         final PlayfulCloudMotion.Combo combo=new PlayfulCloudMotion.Combo();
+        final PlayfulCloudPhysics firstRig=new PlayfulCloudPhysics(),thirdRightRig=new PlayfulCloudPhysics(),thirdLeftRig=new PlayfulCloudPhysics();
+        RenderRoot renderRoot;
         int step=0;
         float start=-1000;
         float cancelled=-1000;
@@ -48,6 +54,7 @@ public final class PlayfulCloudHands {
         float lastYaw,lastPitch,lagYaw,lagPitch;
         int lastLagTick=-1;
     }
+    private record RenderRoot(PoseStack poses,PlayfulCloudPhysics.Frame basis,PlayfulCloudPhysics.Vec worldOrigin,float partial,boolean worldPass) {}
     private record Impact(Vec3 position,Vec3 direction,long born,float power,int step) {}
     private PlayfulCloudHands() {}
     public static void install() {
@@ -133,19 +140,65 @@ public final class PlayfulCloudHands {
         }
         return true;
     }
+    private static PlayfulCloudPhysics.Vec vector(Vector3f v){return new PlayfulCloudPhysics.Vec(v.x,v.y,v.z);}
+    private static PlayfulCloudPhysics.Frame matrixFrame(Matrix4f matrix){
+        return new PlayfulCloudPhysics.Frame(vector(matrix.transformPosition(new Vector3f())),
+            vector(matrix.transformDirection(new Vector3f(1,0,0))),vector(matrix.transformDirection(new Vector3f(0,1,0))),
+            vector(matrix.transformDirection(new Vector3f(0,0,1))));
+    }
+    @SubscribeEvent(priority=EventPriority.LOWEST)
+    public static void beginPlayer(RenderPlayerEvent.Pre event){
+        if(!(event.getEntity() instanceof AbstractClientPlayer actor)||firstPersonDepth>0)return;
+        if(!(actor.getMainHandItem().getItem() instanceof PlayfulCloudItem)
+            &&!(actor.getOffhandItem().getItem() instanceof PlayfulCloudItem))return;
+        float partial=event.getPartialTick();
+        Vec3 offset=event.getRenderer().getRenderOffset(actor,partial);
+        // EntityRenderDispatcher has already translated the render root, but has not applied the model pose.
+        // Root cancellation works with Forge's view-in-PoseStack and NeoForge's separate view matrix alike.
+        var origin=new PlayfulCloudPhysics.Vec(Mth.lerp((double)partial,actor.xOld,actor.getX())+offset.x,
+            Mth.lerp((double)partial,actor.yOld,actor.getY())+offset.y,Mth.lerp((double)partial,actor.zOld,actor.getZ())+offset.z);
+        boolean worldPass=Math.abs(RenderSystem.getProjectionMatrix().m33())<.0001f;
+        motion(actor).renderRoot=new RenderRoot(event.getPoseStack(),matrixFrame(event.getPoseStack().last().pose()),origin,partial,worldPass);
+    }
+    @SubscribeEvent public static void endPlayer(RenderPlayerEvent.Post event){
+        Motion m=MOTIONS.get(event.getEntity());if(m!=null)m.renderRoot=null;
+    }
+    private static PlayfulCloudPhysics.Frame physicalFrame(PoseStack poses){
+        var camera=Minecraft.getInstance().gameRenderer.getMainCamera();
+        Matrix4f view=new Matrix4f(RenderSystem.getModelViewMatrix()).mul(poses.last().pose());
+        Vector3f o=view.transformPosition(new Vector3f()).rotate(camera.rotation());
+        Vec3 world=camera.getPosition().add(o.x,o.y,o.z);
+        return new PlayfulCloudPhysics.Frame(new PlayfulCloudPhysics.Vec(world.x,world.y,world.z),
+            vector(view.transformDirection(new Vector3f(1,0,0)).rotate(camera.rotation())),
+            vector(view.transformDirection(new Vector3f(0,1,0)).rotate(camera.rotation())),
+            vector(view.transformDirection(new Vector3f(0,0,1)).rotate(camera.rotation())));
+    }
     public static void thirdPerson(LivingEntity entity,HumanoidArm arm,PoseStack poses,MultiBufferSource buffers,int light) {
         if(!(entity instanceof AbstractClientPlayer actor)||actor.isInvisible())return;
         if(!(Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(actor) instanceof PlayerRenderer renderer))return;
-        float partial=Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false),side=arm==HumanoidArm.RIGHT?1:-1;
-        Motion m=motion(actor);Pose p=sample(actor,m,partial);float age=actor.tickCount+partial-m.start;
+        Motion m=motion(actor);RenderRoot root=m.renderRoot;
+        float partial=root!=null?root.partial:Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false),side=arm==HumanoidArm.RIGHT?1:-1;
+        Pose p=sample(actor,m,partial);float age=actor.tickCount+partial-m.start;
         poses.pushPose();
         try {
             ModelPart part=arm==HumanoidArm.RIGHT?renderer.getModel().rightArm:renderer.getModel().leftArm;
             part.translateAndRotate(poses);
             poses.translate(-side*.0625,.625,0);
             poses.mulPose(Axis.XP.rotationDegrees(-110));poses.mulPose(Axis.ZP.rotationDegrees(side*-8));
-            PlayfulCloudRenderer.draw(poses,buffers.getBuffer(PlayfulCloudRenderer.SOLID),p,side,light,OverlayTexture.NO_OVERLAY);
-            if(charge(actor,partial)==0)PlayfulCloudRenderer.trail(poses,buffers.getBuffer(PlayfulCloudRenderer.TRAIL),p,m.step,age,side);
+            if(root==null||root.poses!=poses||(!root.worldPass&&root.basis.y().length()>4)){
+                // Inventory portraits must not advance or contaminate the world-space rig.
+                PlayfulCloudRenderer.draw(poses,buffers.getBuffer(PlayfulCloudRenderer.SOLID),p,side,light,OverlayTexture.NO_OVERLAY);
+                return;
+            }
+            var frame=PlayfulCloudPhysics.Frame.relative(root.basis,matrixFrame(poses.last().pose()),root.worldOrigin);
+            var rig=arm==HumanoidArm.RIGHT?m.thirdRightRig:m.thirdLeftRig;
+            if(root.worldPass)rig.update((actor.tickCount+(double)partial)/20,frame,charge(actor,partial)>0?0:PlayfulCloudMotion.whipDrive(m.step,age));
+            else if(rig.point(0)==null){
+                PlayfulCloudRenderer.draw(poses,buffers.getBuffer(PlayfulCloudRenderer.SOLID),p,side,light,OverlayTexture.NO_OVERLAY);
+                return;
+            } // Shadow passes reuse the actual solved rods; they never write physics state.
+            PlayfulCloudRenderer.physical(poses,buffers.getBuffer(PlayfulCloudRenderer.SOLID),rig,frame,light,OverlayTexture.NO_OVERLAY);
+            if(root.worldPass&&charge(actor,partial)==0)PlayfulCloudRenderer.physicalTrail(poses,buffers.getBuffer(PlayfulCloudRenderer.TRAIL),rig,frame,PlayfulCloudMotion.trail(m.step,age));
         }finally{poses.popPose();}
     }
     @SubscribeEvent(priority=EventPriority.HIGHEST)
@@ -180,13 +233,14 @@ public final class PlayfulCloudHands {
             FirstPersonSkin.draw(renderer,poses,event.getMultiBufferSource(),event.getPackedLight(),actor,actor.getMainArm());
             poses.popPose();
             poses.mulPose(Axis.XP.rotationDegrees(90));poses.mulPose(Axis.ZP.rotationDegrees(-8*side));
+            var frame=physicalFrame(poses);m.firstRig.update((actor.tickCount+(double)partial)/20,frame,charge(actor,partial)>0?0:PlayfulCloudMotion.whipDrive(m.step,age));
             boolean attached=FirstPersonSkin.attachment(actor,PlayfulCloudRenderer.SURFACE,vertices -> {
-                PlayfulCloudRenderer.draw(poses,vertices,p,side,event.getPackedLight(),OverlayTexture.NO_OVERLAY);
-                if(charge(actor,partial)==0)PlayfulCloudRenderer.trail(poses,vertices,p,m.step,age,side);
+                PlayfulCloudRenderer.physical(poses,vertices,m.firstRig,frame,event.getPackedLight(),OverlayTexture.NO_OVERLAY);
+                if(charge(actor,partial)==0)PlayfulCloudRenderer.physicalTrail(poses,vertices,m.firstRig,frame,PlayfulCloudMotion.trail(m.step,age));
             });
             if(!attached) {
-                PlayfulCloudRenderer.draw(poses,event.getMultiBufferSource().getBuffer(PlayfulCloudRenderer.SOLID),p,side,event.getPackedLight(),OverlayTexture.NO_OVERLAY);
-                if(charge(actor,partial)==0)PlayfulCloudRenderer.trail(poses,event.getMultiBufferSource().getBuffer(PlayfulCloudRenderer.TRAIL),p,m.step,age,side);
+                PlayfulCloudRenderer.physical(poses,event.getMultiBufferSource().getBuffer(PlayfulCloudRenderer.SOLID),m.firstRig,frame,event.getPackedLight(),OverlayTexture.NO_OVERLAY);
+                if(charge(actor,partial)==0)PlayfulCloudRenderer.physicalTrail(poses,event.getMultiBufferSource().getBuffer(PlayfulCloudRenderer.TRAIL),m.firstRig,frame,PlayfulCloudMotion.trail(m.step,age));
             }
         }finally{firstPersonDepth--;poses.popPose();}
         if(actor.getOffhandItem().isEmpty()) {

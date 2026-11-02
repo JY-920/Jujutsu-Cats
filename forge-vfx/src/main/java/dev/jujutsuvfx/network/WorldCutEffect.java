@@ -6,9 +6,9 @@ import dev.jujutsuvfx.platform.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import java.util.UUID;
-/** One authoritative hit, broadcast before removal so clients can capture the victim's current pose. */
+/** target -1 launches a traveling blade; nonnegative targets capture a contact before removal. */
 public record WorldCutEffect(int target,UUID uuid,Vec3 center,Vec3 forward,Vec3 stroke,int seed,float bladeLength) implements CustomPacketPayload {
- public static final Type<WorldCutEffect> TYPE=new Type<>(new ResourceLocation(JujutsuVfx.ID,"world_cut_effect_v1"));
+ public static final Type<WorldCutEffect> TYPE=new Type<>(new ResourceLocation(JujutsuVfx.ID,"world_cut_effect_v2"));
  public static final StreamCodec<FriendlyByteBuf,WorldCutEffect> CODEC=StreamCodec.of((b,p)->{
   b.writeVarInt(p.target);b.writeUUID(p.uuid);write(b,p.center);write(b,p.forward);write(b,p.stroke);b.writeInt(p.seed);b.writeFloat(p.bladeLength);
  },b->new WorldCutEffect(b.readVarInt(),b.readUUID(),read(b),read(b),read(b),b.readInt(),b.readFloat()));

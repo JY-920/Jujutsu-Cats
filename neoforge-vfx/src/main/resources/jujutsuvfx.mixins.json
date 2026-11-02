@@ -16,7 +16,9 @@
     "SkillFurnaceExperienceMixin",
     "SilentRopeBreakMixin",
     "PurpleBreakEffectsMixin",
-    "CinematicSoundBroadcastMixin"
+    "CinematicSoundBroadcastMixin",
+    "LivingDanceStateMixin",
+    "LivingDanceAiMixin"
   ],
   "client": [
     "HandLightTextureAccessor",
@@ -33,8 +35,13 @@
     "CinematicCameraMixin",
     "CinematicCameraShakeMixin",
     "CinematicSoundListenerMixin",
+    "PlayerDanceHandMixin",
+    "PlayerDanceCapeMixin",
     "MartialModelMixin",
-    "MartialLimbMixin"
+    "MartialLimbMixin",
+    "LivingDanceRenderMixin",
+    "LivingDanceFallbackMixin",
+    "DanceModelPartMixin"
   ],
   "injectors": {
     "defaultRequire": 1

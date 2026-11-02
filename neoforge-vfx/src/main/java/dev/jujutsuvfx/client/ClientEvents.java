@@ -249,8 +249,10 @@ public final class ClientEvents {
     }
     private static void clearClash(){clash=null;DomainClashRenderer.release();}
     private static void clearAll(){
+        WorldCutBladeRenderer.clear();
         ClientShrineFocus.clear();
         UnlimitedPurpleEffects.clear();
+        YutaGetoClashEffects.release();
         CatSpells.clear();
         ClientFistEffects.clear();
         ClientSukunaSlashes.clear();
@@ -356,8 +358,10 @@ public final class ClientEvents {
         techniques.sort((a,b)->Double.compare(b.center(mc,partial).distanceToSqr(camera),a.center(mc,partial).distanceToSqr(camera)));
         for(LimitlessCast cast:techniques)LimitlessRenderer.render(event,cast);
         UnlimitedPurpleEffects.render(event);
+        YutaGetoClashEffects.render(event);
         ClientFistEffects.render(event);
         InfinityBarrierRenderer.render(event);
+        WorldCutRenderer.render(event);
     }
     private static MalevolentShrine visualShrine(){return CatSpells.shrine();}
     static UnlimitedVoid visualVoid(){return CatSpells.gojo();}
@@ -391,6 +395,8 @@ public final class ClientEvents {
         long now=ClientEffectClock.ticks();
         MalevolentShrine shrine=visualShrine();UnlimitedVoid unlimitedVoid=visualVoid();ShrineFeedback feedback=visualFeedback();
         float basePitch=event.getPitch(),baseYaw=event.getYaw(),baseRoll=event.getRoll();
+        YutaGetoCamera.camera(event,partial,scale);
+        PlayerUzumakiRenderer.camera(event,partial,scale);
         CatSpells.camera(event,now,partial,scale);
         if(feedback!=null)feedback.camera(event,now,partial,scale);
         if(unlimitedVoid!=null)VoidFeedback.camera(event,unlimitedVoid,now,partial,scale);
@@ -398,6 +404,7 @@ public final class ClientEvents {
         for(LimitlessCast cast:TECHNIQUES.values())cast.camera(event,now,partial,scale);
         ClientFistEffects.camera(event,now,partial,scale);
         ClientSukunaSlashes.camera(event,now,partial,scale);
+        WorldCutRenderer.camera(event,now,partial,scale);
         float blast=UnlimitedPurpleEffects.shake(partial)*scale,blastTime=(now+partial)/20f;
         event.setPitch(event.getPitch()+(float)Math.sin(blastTime*73)*blast);
         event.setYaw(event.getYaw()+(float)Math.sin(blastTime*51+1.3)*blast*.55f);

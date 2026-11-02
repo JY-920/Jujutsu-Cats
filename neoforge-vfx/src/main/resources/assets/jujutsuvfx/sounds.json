@@ -248,5 +248,114 @@
         "stream": true
       }
     ]
+  },
+  "world_cut_draw": {
+    "subtitle": "subtitles.jujutsuvfx.world_cut_draw",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:world_cut_draw",
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "cursed_speech_charge": {
+    "subtitle": "subtitles.jujutsuvfx.cursed_speech_charge",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:cursed_speech_charge",
+        "stream": false
+      }
+    ]
+  },
+  "cursed_speech_release": {
+    "subtitle": "subtitles.jujutsuvfx.cursed_speech_release",
+    "sounds": [
+      {
+        "name": "jujutsuvfx:cursed_speech_release",
+        "stream": false
+      }
+    ]
+  },
+  "yuta_domain_open": {
+    "sounds": [
+      "jujutsuvfx:yuta_domain_open"
+    ],
+    "subtitle": "subtitles.jujutsuvfx.yuta_domain_open"
+  },
+  "yuta_ladder": {
+    "sounds": [
+      "jujutsuvfx:yuta_ladder"
+    ],
+    "subtitle": "subtitles.jujutsuvfx.yuta_ladder"
+  },
+  "yuta_sword": {
+    "sounds": [
+      "jujutsuvfx:yuta_sword"
+    ],
+    "subtitle": "subtitles.jujutsuvfx.yuta_sword"
+  },
+  "duel_ring": {
+    "sounds": [
+      {
+        "name": "jujutsuvfx:duel_ring",
+        "preload": true,
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "duel_geto_charge": {
+    "sounds": [
+      {
+        "name": "jujutsuvfx:duel_geto_charge",
+        "preload": true,
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "duel_rika_charge": {
+    "sounds": [
+      {
+        "name": "jujutsuvfx:duel_rika_charge",
+        "preload": true,
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "duel_clash_pressure": {
+    "sounds": [
+      {
+        "name": "jujutsuvfx:duel_clash_pressure",
+        "preload": true,
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "duel_clash_hit": {
+    "sounds": [
+      {
+        "name": "jujutsuvfx:duel_clash_hit",
+        "preload": true,
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "duel_breakthrough": {
+    "sounds": [
+      {
+        "name": "jujutsuvfx:duel_breakthrough",
+        "preload": true,
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "duel_aftermath": {
+    "sounds": [
+      {
+        "name": "jujutsuvfx:duel_aftermath",
+        "preload": true,
+        "attenuation_distance": 96
+      }
+    ]
   }
+
 }

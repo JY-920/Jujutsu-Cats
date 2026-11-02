@@ -26,7 +26,7 @@ public final class TechniqueGestures {
         Motion(ServerPlayer owner,int session,int kind,InteractionHand hand,boolean guided) {
             this.owner=owner;level=owner.serverLevel();this.session=session;this.kind=kind;this.hand=hand==InteractionHand.OFF_HAND?1:0;
             ItemStack held=owner.getItemInHand(hand);bound=matches(held,kind)?held.copy():ItemStack.EMPTY;
-            born=owner.getServer().getTickCount();autoRelease=kind==SkillGesture.BLUE?(guided?200:14):kind==SkillGesture.FURNACE?80:26;
+            born=owner.getServer().getTickCount();autoRelease=kind==SkillGesture.BLUE?(guided?200:14):kind==SkillGesture.FURNACE?80:(kind==SkillGesture.UZUMAKI||kind==SkillGesture.LOVE_BEAM)?72000:kind==SkillGesture.SPEECH?8:kind==SkillGesture.YUTA?40:26;
         }
         int age(){return (int)Math.max(0,owner.getServer().getTickCount()-born);}
         SkillGesture snapshot(){return new SkillGesture(owner.getId(),owner.getUUID(),session,kind,hand,age(),release);}
@@ -48,6 +48,14 @@ public final class TechniqueGestures {
     public static void cancel(ServerPlayer owner,int session,int kind) {
         Motion motion=find(owner,session,kind);if(motion==null)return;
         motion.release=-2;motion.broadcast();STATES.get(owner.getServer()).remove(owner.getUUID(),motion);
+    }
+    public static void releaseCurrent(ServerPlayer owner,int kind) {
+        Map<UUID,Motion> state=STATES.get(owner.getServer());Motion motion=state==null?null:state.get(owner.getUUID());
+        if(motion!=null&&motion.kind==kind)release(owner,motion.session,kind);
+    }
+    public static void cancelCurrent(ServerPlayer owner,int kind) {
+        Map<UUID,Motion> state=STATES.get(owner.getServer());Motion motion=state==null?null:state.get(owner.getUUID());
+        if(motion!=null&&motion.kind==kind)cancel(owner,motion.session,kind);
     }
     public static void interrupt(ServerPlayer owner) {
         Map<UUID,Motion> state=STATES.get(owner.getServer());Motion motion=state==null?null:state.remove(owner.getUUID());
@@ -86,5 +94,6 @@ public final class TechniqueGestures {
     @SubscribeEvent public static void stopped(ServerStoppedEvent event){STATES.remove(net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer());}
     private static boolean matches(ItemStack stack,int kind){return switch(kind){
         case SkillGesture.BLUE->stack.is(VfxItems.BLUE.get());case SkillGesture.FURNACE->stack.is(VfxItems.FUGA.get());
+        case SkillGesture.LOVE_BEAM->stack.is(VfxItems.LOVE_BEAM.get());case SkillGesture.UZUMAKI->stack.is(VfxItems.MAXIMUM_UZUMAKI.get());case SkillGesture.SPEECH->stack.is(VfxItems.CURSED_SPEECH.get());case SkillGesture.YUTA->stack.is(VfxItems.YUTA_DOMAIN.get());
         case SkillGesture.VOID->stack.is(VfxItems.UNLIMITED_VOID.get());case SkillGesture.SHRINE->stack.is(VfxItems.MALEVOLENT_SHRINE.get());default->false;};}
 }
