@@ -7,6 +7,16 @@ uniform vec3 RikaPos, GetoPos, ContactPos, BurstPos;
 uniform float Time, RikaCharge, GetoCharge, RikaBeam, GetoBeam, Contact, Pressure, Burst, Aftermath, Visibility, Seed, EnergyScale;
 // GetoScale shrinks Geto's vortex for the short ranged blast; ContactTone 1 turns the impact into a curse burst.
 uniform float GetoScale, ContactTone;
+uniform float BeamPathCount, BeamPathLength;
+uniform vec3 BeamNode0;
+uniform vec3 BeamNode1;
+uniform vec3 BeamNode2;
+uniform vec3 BeamNode3;
+uniform vec3 BeamNode4;
+uniform vec3 BeamNode5;
+uniform vec3 BeamNode6;
+uniform vec3 BeamNode7;
+uniform vec3 BeamNode8;
 in vec2 texCoord;
 in vec4 tint;
 out vec4 fragColor;
@@ -40,6 +50,43 @@ float segmentDistance(vec3 p, vec3 a, vec3 b, out float h) {
     return length(pa - ba * h);
 }
 
+vec3 beamNode(int i) {
+    if (i == 0) return BeamNode0;
+    if (i == 1) return BeamNode1;
+    if (i == 2) return BeamNode2;
+    if (i == 3) return BeamNode3;
+    if (i == 4) return BeamNode4;
+    if (i == 5) return BeamNode5;
+    if (i == 6) return BeamNode6;
+    if (i == 7) return BeamNode7;
+    return BeamNode8;
+}
+
+// Eight bounded spans are shared with the server's collision and damage path.
+float beamPathDistance(vec3 p, out float along, out vec3 axis, out vec3 radial) {
+    float best = 1e10, walked = 0.0;
+    along = 0.0; axis = vec3(0,0,1); radial = p - BeamNode0;
+    for (int i = 0; i < 8; i++) {
+        if (float(i + 1) >= BeamPathCount) break;
+        vec3 a = beamNode(i), d = beamNode(i + 1) - a;
+        float span = length(d); if (span < 1e-5) continue;
+        vec3 dir = d / span; float t = dot(p - a, dir);
+        float at = clamp(t, 0.0, span); vec3 off = p - a - dir * at;
+        float dist = dot(off, off);
+        if (dist < best) {
+            best = dist; axis = dir; along = walked + at; radial = off;
+            // Keep the original beam's soft axial envelopes at the two ends.
+            if ((i == 0 && t < 0.0) || (float(i + 2) >= BeamPathCount && t > span)) {
+                along = walked + t; radial = p - a - dir * t;
+            }
+        }
+        walked += span;
+    }
+    return sqrt(max(best, 0.0));
+}
+
+float curveDistance, curveAlong; vec3 curveAxis, curveRadial;
+
 float rikaRadius() { return .45 + 1.45 * RikaCharge; }
 float getoRadius() { return (.75 + 2.35 * GetoCharge) * GetoScale; }
 float contactRadius() { return (.95 + 1.05 * Pressure) * Contact * GetoScale; }
@@ -53,7 +100,7 @@ vec3 pinkLight(vec3 p) {
     float h;
     float intensity = Contact * (7.0 + 5.0 * Pressure) / (1.0 + dot(p - ContactPos, p - ContactPos) * .30);
     intensity += RikaCharge * 2.2 / (1.0 + dot(p - RikaPos, p - RikaPos) * .55);
-    if (RikaBeam > .001) intensity += RikaBeam * 1.6 / (1.0 + sq(segmentDistance(p, RikaPos, rikaFront(), h)) * 1.4);
+    if (RikaBeam > .001) intensity += RikaBeam * 1.6 / (1.0 + sq(BeamPathCount > 1.0 ? curveDistance : segmentDistance(p, RikaPos, rikaFront(), h)) * 1.4);
     if (Burst > 0.0) intensity += (1.0 - Burst) * 9.0 / (1.0 + dot(p - BurstPos, p - BurstPos) * .08);
     return mix(LIGHT, vec3(.50, .12, .72), ContactTone) * intensity * (1.0 - .55 * ContactTone);
 }
@@ -63,8 +110,8 @@ float bound(vec3 p) {
     float h, d = 1e5;
     if (RikaCharge > .001) d = min(d, length(p - RikaPos) - rikaRadius() * 1.6);
     if (GetoCharge > .001) d = min(d, length(p - GetoPos) - getoRadius() * 1.7);
-    if (RikaBeam > .001) d = min(d, segmentDistance(p, RikaPos, rikaFront(), h) - 2.8);
-    if (GetoBeam > .001) d = min(d, segmentDistance(p, GetoPos, getoFront(), h) - 2.8);
+    if (RikaBeam > .001) d = min(d, (BeamPathCount > 1.0 ? curveDistance : segmentDistance(p, RikaPos, rikaFront(), h)) - 2.8);
+    if (GetoBeam > .001) d = min(d, (BeamPathCount > 1.0 ? curveDistance : segmentDistance(p, GetoPos, getoFront(), h)) - 2.8);
     if (Contact > .001) {
         vec3 q = p - ContactPos; vec3 axis = normalize(GetoPos - RikaPos);
         float axial = abs(dot(q, axis)), radial = length(q - axis * dot(q, axis));
@@ -97,10 +144,13 @@ void rikaOrb(vec3 p, inout vec3 E, inout float S) {
 void rikaBeam(vec3 p, inout vec3 E, inout float S) {
     if (RikaBeam <= .001) return;
     vec3 ab = ContactPos - RikaPos; float len = length(ab);
+    if (BeamPathCount > 1.0) len = BeamPathLength;
     if (len < .05) return;
-    vec3 axis = ab / len, q = p - RikaPos; float t = dot(q, axis), front = len * RikaBeam;
+    vec3 axis = normalize(ab), q = p - RikaPos; float t = dot(q, axis), front = len * RikaBeam;
+    vec3 rad = q - axis * t;
+    if (BeamPathCount > 1.0) { axis = curveAxis; t = curveAlong; rad = curveRadial; front = len; }
     if (t < -1.0 || t > front + 1.5) return;
-    vec3 rad = q - axis * t; float rho = length(rad);
+    float rho = length(rad);
     float W = (.68 + .30 * Pressure) * (1.0 + .7 * exp(-sq((len - t) / 2.0)) * Contact) * (.7 + .3 * smoothstep(0.0, 3.0, t));
     if (rho > W * 2.0) return;
     vec3 u = perpendicular(axis), v = cross(axis, u);
@@ -157,10 +207,13 @@ void getoOrb(vec3 p, vec3 lit, inout vec3 E, inout float S) {
 void getoBeam(vec3 p, vec3 lit, inout vec3 E, inout float S) {
     if (GetoBeam <= .001) return;
     vec3 ab = ContactPos - GetoPos; float len = length(ab);
+    if (BeamPathCount > 1.0) len = BeamPathLength;
     if (len < .05) return;
-    vec3 axis = ab / len, q = p - GetoPos; float t = dot(q, axis), front = len * GetoBeam;
+    vec3 axis = normalize(ab), q = p - GetoPos; float t = dot(q, axis), front = len * GetoBeam;
+    vec3 rad = q - axis * t;
+    if (BeamPathCount > 1.0) { axis = curveAxis; t = curveAlong; rad = curveRadial; front = len; }
     if (t < -1.0 || t > front + 1.2) return;
-    vec3 rad = q - axis * t; float rho = length(rad);
+    float rho = length(rad);
     float W = (.95 + .35 * Pressure) * (1.0 + .45 * exp(-sq((len - t) / 2.0)) * Contact) * GetoScale;
     if (rho > W * 1.8) return;
     vec3 u = perpendicular(axis), v = cross(axis, u);
@@ -273,6 +326,7 @@ void vfxMaterialMain() {
     for (int i = 0; i < 112; i++) {
         if (t > limit || T < .015) break;
         vec3 p = ray * t;
+        if (BeamPathCount > 1.0) curveDistance = beamPathDistance(p, curveAlong, curveAxis, curveRadial);
         float d = bound(p);
         if (d > .45) { t += d * .9; continue; }
         float dt = .085 + .007 * t;
@@ -281,6 +335,9 @@ void vfxMaterialMain() {
         rikaOrb(p, E, S); rikaBeam(p, E, S);
         getoOrb(p, lit, E, S); getoBeam(p, lit, E, S);
         contact(p, lit, E, S); burst(p, E, S); aftermath(p, E, S);
+        if (BeamPathCount > 1.0 && length(BeamNode0) < 2.3) {
+            float clearance = smoothstep(2.4, 4.2, length(p)); E *= clearance; S *= clearance;
+        }
         float span = min(dt, limit - t);
         float a = exp(-S * span);
         color += T * E * (S > 1e-3 ? (1.0 - a) / S : span);

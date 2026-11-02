@@ -323,5 +323,14 @@
   "death.attack.jujutsuvfx.love_beam": "%1$s 被纯爱的咒力吞没了",
   "death.attack.jujutsuvfx.love_beam.player": "%1$s 被 %2$s 的纯爱冲击波击败了",
   "gui.jujutsuvfx.damage.details.maximum_uzumaki": "玩家持续波每0.5秒造成一次伤害；预览为单次命中值，不含护甲。碰撞爆炸不追加重复伤害。",
-  "gui.jujutsuvfx.damage.details.love_beam": "玩家持续波每0.5秒造成一次伤害；预览为单次命中值，不含护甲。碰撞爆炸不追加重复伤害。"
+  "gui.jujutsuvfx.damage.details.love_beam": "玩家持续波每0.5秒造成一次伤害；预览为单次命中值，不含护甲。碰撞爆炸不追加重复伤害。",
+  "gui.jujutsuvfx.geto_cat.title": "夏油杰猫 · 姿势调整",
+  "gui.jujutsuvfx.geto_cat.pose.0": "自动战斗",
+  "gui.jujutsuvfx.geto_cat.pose.1": "静止站立",
+  "gui.jujutsuvfx.geto_cat.pose.2": "防御姿势",
+  "gui.jujutsuvfx.geto_cat.pose.3": "召唤咒灵姿势",
+  "gui.jujutsuvfx.geto_cat.pose.4": "极之番·漩涡：蓄力",
+  "gui.jujutsuvfx.geto_cat.pose.5": "极之番·漩涡：发射",
+  "gui.jujutsuvfx.geto_cat.hint": "姿势为持续预览，不造成伤害",
+  "gui.jujutsuvfx.geto_cat.restore": "选择「自动战斗」恢复正常行为"
 }

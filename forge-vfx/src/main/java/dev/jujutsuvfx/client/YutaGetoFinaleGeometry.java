@@ -37,33 +37,56 @@ final class YutaGetoFinaleGeometry {
  private YutaGetoFinaleGeometry(){}
  /** Held player casts reuse the same materials without the screenplay collapse. */
  static void sustained(int kind,float age,double length,P source,P direction,P camera,boolean solid,Sink out){
+  sustained(kind,age,length,source,direction,camera,solid,out,java.util.List.of());
+ }
+ static void sustained(int kind,float age,double length,P source,P direction,P camera,boolean solid,Sink out,java.util.List<dev.jujutsuvfx.core.SustainedBeam.P> path){
   if(!Float.isFinite(age)||age<0)return;
   Frame f=Frame.along(direction);float charge=smooth(age,0,70),fade=smooth(age,0,10);
   double reach=Math.max(0,Math.min(length,(age-70)*5));P end=source.add(f.axis.mul(reach));
+  float near=1-smooth(camera.sub(source).length(),2.2,5),sourceFade=1-near*(age>=70?1f:.85f);
+  Sink beam=followPath(out,source,f,path);
   if(kind==1){
    if(solid)return;
-   float near=1-smooth(camera.sub(source).length(),2.2,5);
-   loveCharge(out,source,f,camera,age,.15+.65*charge,fade*(1-.85f*near));
-   if(reach>0)loveBeam(out,source,end,f,camera,age,.98,fade,1);
+   loveCharge(out,source,f,camera,age,.15+.65*charge,fade*sourceFade);
+   if(reach>0)loveBeam(beam,source,end,f,camera,age,.98,fade,1);
   }else if(solid){
-   curseCloud(out,source,f,age,.4+1.4*charge,fade,true,camera);
-   if(reach>0)curseStream(out,source,end,camera,age,1,fade,1);
-  }else curseCorona(out,source,f,camera,age,.4+1.4*charge,fade*.6f);
+   curseCloud(out,source,f,age,.4+1.4*charge,fade*sourceFade,true,camera);
+   if(reach>0)curseStream(beam,source,end,camera,age,1,fade,1);
+  }else curseCorona(out,source,f,camera,age,.4+1.4*charge,fade*.6f*sourceFade);
+ }
+ private static Sink followPath(Sink out,P source,Frame f,java.util.List<dev.jujutsuvfx.core.SustainedBeam.P> path){
+  if(path.size()<2)return out;
+  return (x,y,z,u,v,rgb,alpha)->{
+   P offset=new P(x,y,z).sub(source);double along=offset.x*f.axis.x+offset.y*f.axis.y+offset.z*f.axis.z;
+   var centre=dev.jujutsuvfx.core.BeamPath.sample(path,along);
+   var next=dev.jujutsuvfx.core.BeamPath.sample(path,along+.08);
+   var before=dev.jujutsuvfx.core.BeamPath.sample(path,along-.08);
+   Frame at=Frame.along(new P(next.x()-before.x(),next.y()-before.y(),next.z()-before.z()));
+   double right=offset.x*f.right.x+offset.y*f.right.y+offset.z*f.right.z,up=offset.x*f.up.x+offset.y*f.up.y+offset.z*f.up.z;
+   P warped=new P(centre.x(),centre.y(),centre.z()).add(at.right.mul(right)).add(at.up.mul(up));
+   out.vertex(warped.x,warped.y,warped.z,u,v,rgb,alpha);
+  };
  }
  /** Brief even collision, then explode at the contact; neither source is a loser. */
  static void playerClash(float age,P rika,P geto,P center,P camera,boolean flashes,boolean solid,boolean accents,Sink out){
+  playerClash(age,rika,geto,center,camera,flashes,solid,accents,out,java.util.List.of(),java.util.List.of());
+ }
+ static void playerClash(float age,P rika,P geto,P center,P camera,boolean flashes,boolean solid,boolean accents,Sink out,
+    java.util.List<dev.jujutsuvfx.core.SustainedBeam.P> rikaPath,java.util.List<dev.jujutsuvfx.core.SustainedBeam.P> getoPath){
   if(age<0||age>=40)return;
   Frame rf=Frame.along(center.sub(rika)),gf=Frame.along(center.sub(geto));
+  P rikaEnd=rikaPath.size()>1?rika.add(rf.axis.mul(dev.jujutsuvfx.core.BeamPath.length(rikaPath))):center;
+  P getoEnd=getoPath.size()>1?geto.add(gf.axis.mul(dev.jujutsuvfx.core.BeamPath.length(getoPath))):center;
   float fade=1-smooth(age,12,20),brightness=flashes?1:.66f;
   if(solid){
-   if(!accents&&fade>.005){curseCloud(out,geto,gf,age+180,1.8,fade,true,camera);curseStream(out,geto,center,camera,age+180,1,fade,1);}
+   if(!accents&&fade>.005){curseCloud(out,geto,gf,age+180,1.8,fade,true,camera);curseStream(followPath(out,geto,gf,getoPath),geto,getoEnd,camera,age+180,1,fade,1);}
    if(age<20)clashDebris(out,center,rf,age+180,fade);
    if(age>=12)fragments(out,center,rf,age-6,camera);
    return;
   }
   if(!accents&&fade>.005){
    loveCharge(out,rika,rf,camera,age+180,.7,fade*brightness);
-   loveBeam(out,rika,center,rf,camera,age+180,1,fade*brightness,1);
+   loveBeam(followPath(out,rika,rf,rikaPath),rika,rikaEnd,rf,camera,age+180,1,fade*brightness,1);
    collision(out,center,rf,camera,age+180,1.25+smooth(age,0,12)*.5,fade*brightness,false);
   }
   if(age<20)for(int i=0;i<6;i++)lightning(out,center,rf.at(center,.1,2.5+i*.2,i*2.4+age*.02),camera,age,i,.025,0xFFD6F4,fade*brightness);
@@ -426,7 +449,12 @@ final class YutaGetoFinaleGeometry {
  private static void volumeBeam(Sink out,P start,P end,P camera,double radius,float time,int rgb,float alpha,int mode){
   P axis=end.sub(start),side=axis.cross(camera.sub(start.mix(end,.5))).unit().mul(radius);
   float base=(float)(Math.floor(time*8)*2);
-  quadUV(out,start.sub(side),start.add(side),end.add(side),end.sub(side),rgb,alpha,base,base+1,mode,mode+1);
+  // Subdivide before a player's centreline warp; one long quad would cut across its bends.
+  int spans=Math.max(1,(int)Math.ceil(axis.length()/2));
+  for(int i=0;i<spans;i++){
+   float t=i/(float)spans,next=(i+1)/(float)spans;P a=start.mix(end,t),b=start.mix(end,next);
+   quadUV(out,a.sub(side),a.add(side),b.add(side),b.sub(side),rgb,alpha,base+t,base+next,mode,mode+1);
+  }
  }
  private static void energyRibbon(Sink out,P[] path,P camera,double width,int rgb,float alpha,float time,int mode,boolean taper){
   float base=(float)(Math.floor(time*8)*2);

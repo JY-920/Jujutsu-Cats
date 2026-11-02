@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.143'
 }
-version = '0.113.12-neoforge-1.21.1'
+version = '0.113.13-neoforge-1.21.1'
 group = 'dev.jujutsuvfx'
 base { archivesName = 'jujutsu-vfx' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -417,3 +417,24 @@ tasks.register("verifyPlayerBeamLook", JavaExec) {
     mainClass = "dev.jujutsuvfx.client.PlayerBeamLookTest"
 }
 tasks.named("check") { dependsOn "verifyPlayerBeamLook" }
+
+tasks.register("verifyBeamPath", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.core.BeamPathTest"
+}
+tasks.named("check") { dependsOn "verifyBeamPath" }
+
+tasks.register("verifyBeamPathPayload", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.network.BeamPathPayloadTest"
+}
+tasks.named("check") { dependsOn "verifyBeamPathPayload" }
+
+tasks.register("verifyCurvedBeamGeometry", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "dev.jujutsuvfx.client.CurvedBeamGeometryTest"
+}
+tasks.named("check") { dependsOn "verifyCurvedBeamGeometry" }

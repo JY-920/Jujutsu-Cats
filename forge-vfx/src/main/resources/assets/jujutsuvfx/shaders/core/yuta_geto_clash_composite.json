@@ -247,6 +247,112 @@
    "values": [
     0
    ]
+  },
+  {
+   "name": "BeamPathCount",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "BeamPathLength",
+   "type": "float",
+   "count": 1,
+   "values": [
+    0
+   ]
+  },
+  {
+   "name": "BeamNode0",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BeamNode1",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BeamNode2",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BeamNode3",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BeamNode4",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BeamNode5",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BeamNode6",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BeamNode7",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "BeamNode8",
+   "type": "float",
+   "count": 3,
+   "values": [
+    0,
+    0,
+    0
+   ]
   }
  ]
 }

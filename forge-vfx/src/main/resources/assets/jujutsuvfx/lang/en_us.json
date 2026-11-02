@@ -323,5 +323,14 @@
   "death.attack.jujutsuvfx.love_beam": "%1$s was consumed by Pure Love",
   "death.attack.jujutsuvfx.love_beam.player": "%1$s was defeated by %2$s's Pure Love beam",
   "gui.jujutsuvfx.damage.details.maximum_uzumaki": "Player channel hits every 0.5s. Preview shows one hit before armor. The clash explosion does not duplicate damage.",
-  "gui.jujutsuvfx.damage.details.love_beam": "Player channel hits every 0.5s. Preview shows one hit before armor. The clash explosion does not duplicate damage."
+  "gui.jujutsuvfx.damage.details.love_beam": "Player channel hits every 0.5s. Preview shows one hit before armor. The clash explosion does not duplicate damage.",
+  "gui.jujutsuvfx.geto_cat.title": "Geto Cat · Pose Controls",
+  "gui.jujutsuvfx.geto_cat.pose.0": "Automatic combat",
+  "gui.jujutsuvfx.geto_cat.pose.1": "Stand still",
+  "gui.jujutsuvfx.geto_cat.pose.2": "Guard",
+  "gui.jujutsuvfx.geto_cat.pose.3": "Summon pose",
+  "gui.jujutsuvfx.geto_cat.pose.4": "Maximum: Charge",
+  "gui.jujutsuvfx.geto_cat.pose.5": "Maximum: Fire",
+  "gui.jujutsuvfx.geto_cat.hint": "Poses are held previews; no damage.",
+  "gui.jujutsuvfx.geto_cat.restore": "Select Automatic to restore normal AI."
 }

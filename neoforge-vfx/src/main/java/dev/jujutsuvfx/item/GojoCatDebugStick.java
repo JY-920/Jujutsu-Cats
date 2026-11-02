@@ -22,7 +22,9 @@ public final class GojoCatDebugStick extends Item {
     }
 
     @Override public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
-        if (target instanceof dev.jujutsuvfx.entity.YutaCat cat) {
+        if (target instanceof dev.jujutsuvfx.entity.GetoCat cat) {
+            if (player instanceof ServerPlayer serverPlayer) dev.jujutsuvfx.server.GetoCatControl.open(serverPlayer, cat);
+        } else if (target instanceof dev.jujutsuvfx.entity.YutaCat cat) {
             if (player instanceof ServerPlayer serverPlayer) dev.jujutsuvfx.server.YutaCatControl.open(serverPlayer, cat);
         } else if (target instanceof SorcererCat cat) {
             if (player instanceof ServerPlayer serverPlayer) GojoCatControl.open(serverPlayer, cat);

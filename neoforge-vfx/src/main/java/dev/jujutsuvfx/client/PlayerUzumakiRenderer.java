@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.jujutsuvfx.JujutsuVfx;
 import dev.jujutsuvfx.core.GetoVortexMotion;
 import dev.jujutsuvfx.core.SustainedBeam;
+import dev.jujutsuvfx.core.BeamPath;
 import dev.jujutsuvfx.entity.GetoCat;
 import org.joml.Matrix4f;
 import dev.jujutsuvfx.network.UzumakiState;
@@ -21,9 +22,9 @@ import java.util.*;
 /** Same material/geometry as Geto, rendered directly without a proxy entity. */
 @EventBusSubscriber(modid=JujutsuVfx.ID,value=Dist.CLIENT)
 public final class PlayerUzumakiRenderer {
- private record Cast(UzumakiState state,long received){}
+ private record Cast(UzumakiState state,long received,List<Vec3> previous){}
  private static final Map<UUID,Cast> CASTS=new HashMap<>();
- record Clash(int id,float age,Vec3 rika,Vec3 geto,Vec3 contact,long received){}
+ record Clash(int id,float age,Vec3 rika,Vec3 geto,Vec3 contact,long received,List<Vec3> rikaPath,List<Vec3> getoPath){}
  private static final Map<Integer,Clash> CLASHES=new HashMap<>();
  private static ClientLevel level;
  private PlayerUzumakiRenderer(){}
@@ -35,14 +36,19 @@ public final class PlayerUzumakiRenderer {
   if(state.age()>SustainedBeam.USE_TICKS||state.kind()<0||state.kind()>1||state.clashAge()<-1||state.clashAge()>40
     ||!finite(state.origin())||!finite(state.direction())||!finite(state.contact())||!finite(state.otherOrigin())
     ||!Double.isFinite(state.length())||state.length()<0||state.length()>SustainedBeam.RANGE+2
-    ||state.direction().lengthSqr()<.8||state.direction().lengthSqr()>1.2)return;
+    ||state.direction().lengthSqr()<.8||state.direction().lengthSqr()>1.2
+    ||!BeamPath.valid(state.path().stream().map(PlayerUzumakiRenderer::bp).toList())
+    ||state.clashId()>0&&(!BeamPath.valid(state.otherPath().stream().map(PlayerUzumakiRenderer::bp).toList())||state.otherPath().get(0).distanceToSqr(state.otherOrigin())>.001)
+    ||state.path().get(0).distanceToSqr(state.origin())>.001)return;
   if(previous!=null&&previous.state.session()==state.session()&&previous.state.age()>state.age())return;
   if(CASTS.size()>=64&&!CASTS.containsKey(state.owner()))CASTS.remove(CASTS.keySet().iterator().next());
-  CASTS.put(state.owner(),new Cast(state,ClientEffectClock.ticks()));
+  var previousPath=previous!=null&&previous.state.session()==state.session()?interpolate(previous,ClientEffectClock.ticks()):state.path();
+  CASTS.put(state.owner(),new Cast(state,ClientEffectClock.ticks(),previousPath));
   if(state.clashId()>0&&state.clashAge()>=0){
    if(CLASHES.size()>=32&&!CLASHES.containsKey(state.clashId()))CLASHES.remove(CLASHES.keySet().iterator().next());
    CLASHES.put(state.clashId(),new Clash(state.clashId(),state.clashAge(),state.kind()==1?state.origin():state.otherOrigin(),
-     state.kind()==0?state.origin():state.otherOrigin(),state.contact(),ClientEffectClock.ticks()));
+     state.kind()==0?state.origin():state.otherOrigin(),state.contact(),ClientEffectClock.ticks(),
+     state.kind()==1?state.path():state.otherPath(),state.kind()==0?state.path():state.otherPath()));
   }
  }
  private static boolean finite(Vec3 p){return Double.isFinite(p.x)&&Double.isFinite(p.y)&&Double.isFinite(p.z);}
@@ -51,14 +57,20 @@ public final class PlayerUzumakiRenderer {
   CASTS.values().removeIf(c->now-c.received>30);
   CLASHES.values().removeIf(c->c.age+now-c.received>=40);
  }
- record Visual(float age,Vec3 origin,Vec3 direction,double length,double scale,boolean maximum,int kind,boolean sustained){
-  Visual(float age,Vec3 origin,Vec3 direction,double length,double scale,boolean maximum){this(age,origin,direction,length,scale,maximum,0,false);}
+ record Visual(float age,Vec3 origin,Vec3 direction,double length,double scale,boolean maximum,int kind,boolean sustained,List<Vec3> path){
+  Visual(float age,Vec3 origin,Vec3 direction,double length,double scale,boolean maximum){this(age,origin,direction,length,scale,maximum,0,false,List.of());}
+ }
+ private static SustainedBeam.P bp(Vec3 v){return new SustainedBeam.P(v.x,v.y,v.z);}
+ private static Vec3 vec(SustainedBeam.P p){return new Vec3(p.x(),p.y(),p.z());}
+ private static List<Vec3> interpolate(Cast cast,double now){
+  return BeamPath.interpolate(cast.previous.stream().map(PlayerUzumakiRenderer::bp).toList(),
+   cast.state.path().stream().map(PlayerUzumakiRenderer::bp).toList(),(now-cast.received)/2).stream().map(PlayerUzumakiRenderer::vec).toList();
  }
  static List<Clash> clashes(float partial,Vec3 camera){
   ensureWorld();List<Clash> result=new ArrayList<>();
   for(Clash c:CLASHES.values()){
    float age=c.age+ClientEffectClock.ticks()-c.received+partial;
-   if(age<40&&camera.distanceToSqr(c.contact)<192*192)result.add(new Clash(c.id,age,c.rika,c.geto,c.contact,c.received));
+   if(age<40&&camera.distanceToSqr(c.contact)<192*192)result.add(new Clash(c.id,age,c.rika,c.geto,c.contact,c.received,c.rikaPath,c.getoPath));
   }
   return result;
  }
@@ -84,19 +96,29 @@ public final class PlayerUzumakiRenderer {
   for(Cast cast:CASTS.values()){
    var s=cast.state;float age=s.age()+ClientEffectClock.ticks()-cast.received+partial;
    if(s.clashId()!=0)continue;
-   Vec3 origin=s.origin(),axis=s.direction();double length=s.length();
+   Vec3 origin=s.origin(),axis=s.direction();double length=s.length();List<Vec3> path=interpolate(cast,ClientEffectClock.ticks()+partial);
    if(!s.fired())age=Math.min(GetoVortexMotion.FIRE-.001f,age);
    {
     if(level.getEntity(s.actor()) instanceof Player player&&player.getUUID().equals(s.owner())){
      if(!player.isAlive()||player.isSpectator())continue;
-     axis=player.getViewVector(partial).normalize();origin=player.getEyePosition(partial).add(axis.scale(1.6)).add(0,-.15,0);
-     var clip=level.clip(new net.minecraft.world.level.ClipContext(player.getEyePosition(partial),origin.add(axis.scale(SustainedBeam.RANGE)),
+     // Only the muzzle follows the interpolated player. Never replace the whole path with the crosshair ray.
+     Vec3 view=player.getViewVector(partial).normalize(),muzzle=player.getEyePosition(partial).add(view.scale(1.6)).add(0,-.15,0);
+     var blocked=level.clip(new net.minecraft.world.level.ClipContext(player.getEyePosition(partial),muzzle,
        net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,player));
-     length=Math.max(0,Math.min(SustainedBeam.RANGE,clip.getLocation().subtract(origin).dot(axis)));
-     if(length==0)origin=clip.getLocation();
+     if(blocked.getType()!=net.minecraft.world.phys.HitResult.Type.MISS){path=List.of(blocked.getLocation());}
+     else if(muzzle.distanceToSqr(path.get(0))<16){
+      Vec3 shift=muzzle.subtract(path.get(0));path=path.stream().map(point->point.add(shift)).toList();
+      path=BeamPath.clip(path.stream().map(PlayerUzumakiRenderer::bp).toList(),(a,b)->{
+       var hit=level.clip(new net.minecraft.world.level.ClipContext(vec(a),vec(b),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,player));
+       return hit.getType()==net.minecraft.world.phys.HitResult.Type.MISS?null:bp(hit.getLocation());
+      }).stream().map(PlayerUzumakiRenderer::vec).toList();
+     }
     }
    }
-   if(visuals.size()<24&&camera.distanceToSqr(origin)<=192*192)visuals.add(new Visual(age,origin,axis,length,1,true,s.kind(),true));
+   origin=path.get(0);length=BeamPath.length(path.stream().map(PlayerUzumakiRenderer::bp).toList());
+   if(path.size()>1)axis=path.get(1).subtract(origin).normalize();
+   path=BeamPath.prefix(path.stream().map(PlayerUzumakiRenderer::bp).toList(),SustainedBeam.reach(age,length)).stream().map(PlayerUzumakiRenderer::vec).toList();
+   if(visuals.size()<24&&camera.distanceToSqr(origin)<=192*192)visuals.add(new Visual(age,origin,axis,length,1,true,s.kind(),true,path));
   }
   return visuals;
  }
@@ -144,11 +166,11 @@ public final class PlayerUzumakiRenderer {
  }
  private static YutaGetoFinaleGeometry.P p(Vec3 v){return new YutaGetoFinaleGeometry.P(v.x,v.y,v.z);}
  private static void drawBeam(Visual v,Vec3 camera,boolean solid,com.mojang.blaze3d.vertex.VertexConsumer out){
-  if(v.sustained)YutaGetoFinaleGeometry.sustained(v.kind,v.age,v.length,p(v.origin),p(v.direction),p(camera),solid,YutaGetoFinaleRenderer.sink(out,camera));
+  if(v.sustained)YutaGetoFinaleGeometry.sustained(v.kind,v.age,v.length,p(v.origin),p(v.direction),p(camera),solid,YutaGetoFinaleRenderer.sink(out,camera),v.path.stream().map(PlayerUzumakiRenderer::bp).toList());
   else YutaGetoFinaleRenderer.maximum(v.age,v.origin,v.direction,v.length,v.scale,camera,solid,out);
  }
  private static void drawClash(Clash c,Vec3 camera,boolean solid,com.mojang.blaze3d.vertex.VertexConsumer out){
   YutaGetoFinaleGeometry.playerClash(c.age,p(c.rika),p(c.geto),p(c.contact),p(camera),dev.jujutsuvfx.config.VfxConfig.flashes(),solid,
-    YutaGetoClashEffects.ready(),YutaGetoFinaleRenderer.sink(out,camera));
+    YutaGetoClashEffects.ready(),YutaGetoFinaleRenderer.sink(out,camera),c.rikaPath.stream().map(PlayerUzumakiRenderer::bp).toList(),c.getoPath.stream().map(PlayerUzumakiRenderer::bp).toList());
  }
 }

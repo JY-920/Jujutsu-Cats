@@ -37,6 +37,7 @@ public final class GetoCat extends PathfinderMob implements DancingCat {
  public LivingEntity cameraTarget(){return level().getEntity(entityData.get(CAMERA_TARGET)) instanceof LivingEntity target?target:null;}
  public static final int SUMMON=100,UZUMAKI=101,RETREAT=102,BLAST=103;
  private static final EntityDataAccessor<Integer> ACTION=SynchedEntityData.defineId(GetoCat.class,EntityDataSerializers.INT);
+ private static final EntityDataAccessor<Integer> DEBUG_POSE=SynchedEntityData.defineId(GetoCat.class,EntityDataSerializers.INT);
  private static final EntityDataAccessor<Long> START=SynchedEntityData.defineId(GetoCat.class,EntityDataSerializers.LONG);
  private static final EntityDataAccessor<CompoundTag> DANCE=SynchedEntityData.defineId(GetoCat.class,EntityDataSerializers.COMPOUND_TAG);
  private static final EntityDataAccessor<CompoundTag> AIM=SynchedEntityData.defineId(GetoCat.class,EntityDataSerializers.COMPOUND_TAG);
@@ -54,7 +55,7 @@ public final class GetoCat extends PathfinderMob implements DancingCat {
  private ServerBossEvent boss;
  public GetoCat(EntityType<? extends PathfinderMob> type,Level level){super(type,level);setPersistenceRequired();xpReward=50;}
  public static AttributeSupplier.Builder createAttributes(){return Mob.createMobAttributes().add(Attributes.MAX_HEALTH,800).add(Attributes.MOVEMENT_SPEED,.33).add(Attributes.FOLLOW_RANGE,128).add(Attributes.ATTACK_DAMAGE,10).add(Attributes.KNOCKBACK_RESISTANCE,.45);}
- @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(DUEL,new CompoundTag());b.define(FIGHTING,false);b.define(CAMERA_TARGET,-1);b.define(ACTION,0);b.define(START,0L);b.define(DANCE,new CompoundTag());b.define(AIM,new CompoundTag());}
+ @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(DUEL,new CompoundTag());b.define(FIGHTING,false);b.define(CAMERA_TARGET,-1);b.define(ACTION,0);b.define(DEBUG_POSE,0);b.define(START,0L);b.define(DANCE,new CompoundTag());b.define(AIM,new CompoundTag());}
  @Override protected void registerGoals(){
   goalSelector.addGoal(0,new FloatGoal(this));
   goalSelector.addGoal(1,new Goal(){ {setFlags(EnumSet.of(Flag.MOVE,Flag.LOOK));} public boolean canUse(){return valid(getTarget());} public void stop(){getNavigation().stop();} });
@@ -72,8 +73,21 @@ public final class GetoCat extends PathfinderMob implements DancingCat {
  }
  public boolean valid(LivingEntity t){return !YutaGetoDuel.suppressed(this,t)&&t!=null&&t!=this&&t.isAlive()&&t.level()==level()&&!isAlliedTo(t)&&!(t instanceof CursedSpirit s&&getUUID().equals(s.ownerId()))&&!(t instanceof Player p&&(p.isCreative()||p.isSpectator()))&&distanceToSqr(t)<=128*128;}
  public boolean inCombat(){return entityData.get(FIGHTING);}
- public int action(){return entityData.get(ACTION);}
- public float actionAge(float partial){return Math.max(0,(level().getGameTime()-entityData.get(START)+partial)*(GetoCloudMotion.active(action())?1.5f:1));}
+ public int debugPose(){return entityData.get(DEBUG_POSE);}
+ public void setDebugPose(int pose){
+  if(level().isClientSide||!GetoDebugPose.valid(pose))return;
+  YutaGetoDuel.cancel(this);CatDance.start(this,0);finish();releasePrey();recall();
+  setTarget(null);setLastHurtByMob(null);entityData.set(FIGHTING,false);entityData.set(CAMERA_TARGET,-1);
+  entityData.set(DEBUG_POSE,pose);entityData.set(START,level().getGameTime());
+  entityData.set(AIM,new CompoundTag());forcedRanged=false;retreatCast=false;
+  getNavigation().stop();setDeltaMovement(0,getDeltaMovement().y,0);setXxa(0);setZza(0);
+  yBodyRot=getYRot();setYHeadRot(getYRot());if(boss!=null)boss.removeAllPlayers();
+ }
+ public int action(){return debugPose()!=0?GetoDebugPose.action(debugPose()):entityData.get(ACTION);}
+ public float actionAge(float partial){
+  float age=Math.max(0,level().getGameTime()-entityData.get(START)+partial);
+  return debugPose()!=0?GetoDebugPose.age(debugPose(),age):age*(GetoCloudMotion.active(action())?1.5f:1);
+ }
  public Vec3 beamDirection(){CompoundTag t=entityData.get(AIM);return new Vec3(t.getDouble("X"),t.getDouble("Y"),t.getDouble("Z"));}
  public double beamLength(){return entityData.get(AIM).contains("Length")?entityData.get(AIM).getDouble("Length"):40;}
  public Vec3 spellOrigin(){CompoundTag a=entityData.get(AIM);return (action()==UZUMAKI||action()==BLAST)&&a.contains("OriginX")?new Vec3(a.getDouble("OriginX"),a.getDouble("OriginY"),a.getDouble("OriginZ")):position().add(0,1.7,0).add(getLookAngle().multiply(1,0,1).normalize().scale(.85));}
@@ -82,8 +96,8 @@ public final class GetoCat extends PathfinderMob implements DancingCat {
  private void finish(){start(0);cooldown=6+random.nextInt(7);}
  public CompoundTag danceState(){return entityData.get(DANCE);}
  public void danceState(CompoundTag state){entityData.set(DANCE,state);}
- public void setDanceStyle(int style){if(!level().isClientSide){YutaGetoDuel.cancel(this);finish();recall();entityData.set(FIGHTING,false);if(boss!=null)boss.removeAllPlayers();CatDance.start(this,style);}}
- @Override public boolean isNoAi(){return danceStyle()!=0||super.isNoAi();}
+ public void setDanceStyle(int style){if(!level().isClientSide){entityData.set(DEBUG_POSE,0);YutaGetoDuel.cancel(this);finish();releasePrey();recall();entityData.set(FIGHTING,false);if(boss!=null)boss.removeAllPlayers();CatDance.start(this,style);}}
+ @Override public boolean isNoAi(){return debugPose()!=0||danceStyle()!=0||super.isNoAi();}
  @Override public boolean causeFallDamage(float distance,float multiplier,DamageSource source){return false;}
  public List<CursedSpirit> spirits(){
   if(!(level() instanceof ServerLevel l))return List.of();
@@ -176,6 +190,10 @@ public final class GetoCat extends PathfinderMob implements DancingCat {
   }
  }
  @Override public void tick(){
+  if(debugPose()!=0){
+   super.tick();getNavigation().stop();setXxa(0);setZza(0);setDeltaMovement(0,getDeltaMovement().y,0);
+   yBodyRot=getYRot();setYHeadRot(getYRot());return;
+  }
   if(CatDance.hold(this)){if(!level().isClientSide)entityData.set(CAMERA_TARGET,-1);super.tick();CatDance.hold(this);return;}
   LivingEntity retainedTarget=getTarget();
   super.tick();if(level().isClientSide||!isAlive())return;
@@ -329,7 +347,7 @@ public final class GetoCat extends PathfinderMob implements DancingCat {
  }
  @Override public boolean hurt(DamageSource source,float amount){
   if(!YutaGetoDuel.acceptsDamage(this,source))return false;
-  if(!level().isClientSide&&source.getEntity() instanceof LivingEntity attacker&&valid(attacker)){
+  if(!level().isClientSide&&debugPose()==0&&source.getEntity() instanceof LivingEntity attacker&&valid(attacker)){
    setTarget(attacker);missingTarget=0;
    if(action()!=UZUMAKI&&action()!=BLAST&&action()!=RETREAT&&guardCooldown==0&&random.nextFloat()<.35f){
     if(spirits.size()<SpiritRules.LIMIT)summonChimeras(SpiritRules.GUARD,SpiritRules.ASSAULT);guardCooldown=120;start(YutaBladeMotion.GUARD);
@@ -348,6 +366,6 @@ public final class GetoCat extends PathfinderMob implements DancingCat {
  }
  @Override public void die(DamageSource source){YutaGetoDuel.cancel(this);recall();releasePrey();if(boss!=null)boss.removeAllPlayers();super.die(source);}
  @Override public void remove(RemovalReason reason){if(boss!=null)boss.removeAllPlayers();if(!level().isClientSide)releasePrey();if(reason.shouldDestroy()&&!level().isClientSide)recall();super.remove(reason);}
- @Override public void addAdditionalSaveData(CompoundTag tag){super.addAdditionalSaveData(tag);if(danceStyle()!=0)tag.putBoolean("NoAI",super.isNoAi());tag.putInt("GetoMilestones",milestones);int i=0;for(UUID id:spirits){tag.putUUID("GetoSpirit"+i,id);tag.putLong("GetoSpiritUntil"+(i++),spiritExpiry.getOrDefault(id,0L));}}
- @Override public void readAdditionalSaveData(CompoundTag tag){super.readAdditionalSaveData(tag);milestones=tag.getInt("GetoMilestones")&3;spirits.clear();spiritExpiry.clear();for(int i=0;i<SpiritRules.LIMIT;i++)if(tag.hasUUID("GetoSpirit"+i)){UUID id=tag.getUUID("GetoSpirit"+i);spirits.add(id);spiritExpiry.put(id,Math.min(tag.getLong("GetoSpiritUntil"+i),level().getGameTime()+1200));}}
+ @Override public void addAdditionalSaveData(CompoundTag tag){super.addAdditionalSaveData(tag);if(danceStyle()!=0||debugPose()!=0)tag.putBoolean("NoAI",super.isNoAi());tag.putInt("GetoDebugPose",debugPose());tag.putInt("GetoMilestones",milestones);int i=0;for(UUID id:spirits){tag.putUUID("GetoSpirit"+i,id);tag.putLong("GetoSpiritUntil"+(i++),spiritExpiry.getOrDefault(id,0L));}}
+ @Override public void readAdditionalSaveData(CompoundTag tag){super.readAdditionalSaveData(tag);int pose=tag.getInt("GetoDebugPose");entityData.set(DEBUG_POSE,GetoDebugPose.valid(pose)?pose:0);entityData.set(START,level().getGameTime());milestones=tag.getInt("GetoMilestones")&3;spirits.clear();spiritExpiry.clear();for(int i=0;i<SpiritRules.LIMIT;i++)if(tag.hasUUID("GetoSpirit"+i)){UUID id=tag.getUUID("GetoSpirit"+i);spirits.add(id);spiritExpiry.put(id,Math.min(tag.getLong("GetoSpiritUntil"+i),level().getGameTime()+1200));}}
 }

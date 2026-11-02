@@ -6,6 +6,16 @@ uniform mat4 InverseViewProjection, ViewProjection;
 uniform vec3 RikaPos, GetoPos, ContactPos, BurstPos;
 uniform float Time, RikaCharge, GetoCharge, RikaBeam, GetoBeam, Contact, Pressure, Burst, Aftermath, Visibility, Seed;
 uniform float Distortion, FlashEnabled, Flash, EnergyScale, Grade, GetoScale, ContactTone;
+uniform float BeamPathCount, BeamPathLength;
+uniform vec3 BeamNode0;
+uniform vec3 BeamNode1;
+uniform vec3 BeamNode2;
+uniform vec3 BeamNode3;
+uniform vec3 BeamNode4;
+uniform vec3 BeamNode5;
+uniform vec3 BeamNode6;
+uniform vec3 BeamNode7;
+uniform vec3 BeamNode8;
 in vec2 texCoord;
 in vec4 tint;
 out vec4 fragColor;
@@ -64,6 +74,51 @@ float raySegment(vec3 ray, vec3 a, vec3 b, out float along) {
     vec3 q = a + d * s; along = max(dot(q, ray), 0.0);
     return length(q - ray * along);
 }
+vec3 beamNode(int i) {
+    if (i == 0) return BeamNode0;
+    if (i == 1) return BeamNode1;
+    if (i == 2) return BeamNode2;
+    if (i == 3) return BeamNode3;
+    if (i == 4) return BeamNode4;
+    if (i == 5) return BeamNode5;
+    if (i == 6) return BeamNode6;
+    if (i == 7) return BeamNode7;
+    return BeamNode8;
+}
+
+// Eight bounded spans are shared with the server's collision and damage path.
+float beamPathDistance(vec3 p, out float along, out vec3 axis, out vec3 radial) {
+    float best = 1e10, walked = 0.0;
+    along = 0.0; axis = vec3(0,0,1); radial = p - BeamNode0;
+    for (int i = 0; i < 8; i++) {
+        if (float(i + 1) >= BeamPathCount) break;
+        vec3 a = beamNode(i), d = beamNode(i + 1) - a;
+        float span = length(d); if (span < 1e-5) continue;
+        vec3 dir = d / span; float t = dot(p - a, dir);
+        float at = clamp(t, 0.0, span); vec3 off = p - a - dir * at;
+        float dist = dot(off, off);
+        if (dist < best) {
+            best = dist; axis = dir; along = walked + at; radial = off;
+            // Keep the original beam's soft axial envelopes at the two ends.
+            if ((i == 0 && t < 0.0) || (float(i + 2) >= BeamPathCount && t > span)) {
+                along = walked + t; radial = p - a - dir * t;
+            }
+        }
+        walked += span;
+    }
+    return sqrt(max(best, 0.0));
+}
+
+float rayBeamPath(vec3 ray, out float along) {
+    float best = 1e10; along = 0.0;
+    for (int i = 0; i < 8; i++) {
+        if (float(i + 1) >= BeamPathCount) break;
+        float at; float d = raySegment(ray, beamNode(i), beamNode(i + 1), at);
+        if (d < best) { best = d; along = at; }
+    }
+    return best;
+}
+
 vec2 screen(vec3 p) { vec4 c = ViewProjection * vec4(p, 1); return c.w > .001 ? c.xy / c.w * .5 + .5 : vec2(-9.0); }
 vec2 shellPush(vec3 ray, vec3 center, float radius, float worldDepth, float strength) {
     float along = dot(ray, center), disc = along * along + radius * radius - dot(center, center);
@@ -103,7 +158,7 @@ void vfxMaterialMain() {
     push += shellPush(ray, BurstPos, burstRadius, worldDepth, Burst > 0.0 ? (1.0 - min(Burst, 1.0)) * .032 : 0.0);
     float along;
     if (RikaBeam > .001) {
-        float d = raySegment(ray, RikaPos, rikaFront, along);
+        float d = (BeamPathCount > 1.0 ? rayBeamPath(ray, along) : raySegment(ray, RikaPos, rikaFront, along));
         float haze = RikaBeam * exp(-sq(d / 1.6)) * step(along, worldDepth);
         push += (vec2(noise2(texCoord * 60.0 + vec2(Time * 4.0, 0)), noise2(texCoord * 60.0 + vec2(7.0, -Time * 5.0))) - .5) * haze * .010;
     }
@@ -140,6 +195,7 @@ void vfxMaterialMain() {
             vec3 pa = surface - RikaPos, ba = rikaFront - RikaPos;
             h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-5), 0.0, 1.0);
             float db = length(pa - ba * h);
+            if (BeamPathCount > 1.0) { vec3 axis, radial; db = beamPathDistance(surface, h, axis, radial); }
             intensity += RikaBeam * 1.6 / (1.0 + db * db * .12);
         }
         if (Burst > 0.0) {
@@ -182,7 +238,7 @@ void vfxMaterialMain() {
     float dr = rayPoint(ray, RikaPos, rikaAlong);
     glow += RikaCharge * .35 / (1.0 + sq(dr / .6)) * (rikaAlong < worldDepth ? 1.0 : .3);
     if (RikaBeam > .001) {
-        float db = raySegment(ray, RikaPos, rikaFront, beamAlong);
+        float db = (BeamPathCount > 1.0 ? rayBeamPath(ray, beamAlong) : raySegment(ray, RikaPos, rikaFront, beamAlong));
         glow += RikaBeam * .30 / (1.0 + sq(db / .55)) * (beamAlong < worldDepth ? 1.0 : .3);
     }
     if (Burst > 0.0) {

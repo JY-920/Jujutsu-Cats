@@ -61,6 +61,10 @@ public record DomainControl(int action, int session, double x, double y, double 
         SukunaCut.registerPayloads(event);
         event.registrar("1").optional().playToClient(WorldCutEffect.TYPE,WorldCutEffect.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.client.WorldCutRenderer.receive(packet)));
+        event.registrar("1").optional().playToServer(GetoCatEdit.TYPE,GetoCatEdit.CODEC,(packet,context)->
+                context.enqueueWork(()->dev.jujutsuvfx.server.GetoCatControl.edit(packet,context.player())));
+        event.registrar("1").optional().playToClient(GetoCatView.TYPE,GetoCatView.CODEC,(packet,context)->
+                context.enqueueWork(()->dev.jujutsuvfx.client.GetoCatScreen.receive(packet)));
         event.registrar("1").optional().playToServer(YutaCatEdit.TYPE,YutaCatEdit.CODEC,(packet,context)->
                 context.enqueueWork(()->dev.jujutsuvfx.server.YutaCatControl.edit(packet,context.player())));
         event.registrar("1").optional().playToClient(YutaCatView.TYPE,YutaCatView.CODEC,(packet,context)->

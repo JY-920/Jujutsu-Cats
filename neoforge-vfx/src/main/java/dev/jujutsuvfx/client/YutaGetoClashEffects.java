@@ -107,8 +107,9 @@ public final class YutaGetoClashEffects {
         float beam=age<12?1:0;
         return new Look(fade,fade,beam,beam,fade,.7f,burst,0,flash,0,age/20+9,1,0);
     }
-    private record Job(Look look, Vec3 rika, Vec3 geto, Vec3 middle, Vec3 burst, float visibility, int serial, double distance) {
-        Job(Look look,Vec3 rika,Vec3 geto,Vec3 middle,float visibility,int serial,double distance){this(look,rika,geto,middle,geto,visibility,serial,distance);}
+    private record Job(Look look, Vec3 rika, Vec3 geto, Vec3 middle, Vec3 burst, float visibility, int serial, double distance, java.util.List<Vec3> path) {
+        Job(Look look,Vec3 rika,Vec3 geto,Vec3 middle,float visibility,int serial,double distance){this(look,rika,geto,middle,geto,visibility,serial,distance,java.util.List.of());}
+        Job(Look look,Vec3 rika,Vec3 geto,Vec3 middle,Vec3 burst,float visibility,int serial,double distance){this(look,rika,geto,middle,burst,visibility,serial,distance,java.util.List.of());}
     }
 
     public static void render(RenderLevelStageEvent event) {
@@ -147,27 +148,42 @@ public final class YutaGetoClashEffects {
             double distance = camera.distanceToSqr(v.origin());
             // A first-person caster sees the discharge, not the inside of the curse orb at their hands.
             float near = 1 - smooth((float) Math.sqrt(distance), 2.2f, 5f);
-            if (near > 0) look = new Look(look.rikaCharge()*(1-.85f*near), look.getoCharge() * (1 - .85f * near), look.rikaBeam(), look.getoBeam(), look.contact(), look.pressure(), 0, 0, 0, 0,
+            float sourceFade=1-near*(v.sustained()&&v.age()>=dev.jujutsuvfx.core.SustainedBeam.CHARGE?1f:.85f);
+            if (near > 0) look = new Look(look.rikaCharge()*sourceFade, look.getoCharge()*sourceFade, look.rikaBeam(), look.getoBeam(), look.contact(), look.pressure(), 0, 0, 0, 0,
                     look.time(), look.getoScale(), look.contactTone());
             float visibility = 1 - smooth((float) Math.sqrt(distance), 110, 180);
             if (!look.visible() || visibility <= .001f) continue;
-            jobs.add(new Job(look, v.kind()==1?v.origin():v.origin().subtract(axis), v.kind()==1?v.origin().subtract(axis):v.origin(), v.origin().add(axis.scale(v.length())), visibility,
-                    Math.floorMod(v.origin().hashCode(), 997), distance));
+            Vec3 end=v.sustained()&&v.path().size()>1?v.path().get(v.path().size()-1):v.origin().add(axis.scale(Math.max(.01,v.length())));
+            jobs.add(new Job(look, v.kind()==1?v.origin():v.origin().subtract(axis), v.kind()==1?v.origin().subtract(axis):v.origin(), end,end,visibility,
+                    Math.floorMod(v.origin().hashCode(), 997), distance,v.path()));
         }
         for(PlayerUzumakiRenderer.Clash c:PlayerUzumakiRenderer.clashes(partial,camera)){
             double distance=camera.distanceToSqr(c.contact());float visibility=1-smooth((float)Math.sqrt(distance),110,180);
-            if(visibility>.001f)jobs.add(new Job(playerClash(c.age()),c.rika(),c.geto(),c.contact(),c.contact(),visibility,c.id(),distance));
+            if(visibility>.001f){
+                Look clash=playerClash(c.age());
+                for(int kind=0;kind<2;kind++){
+                    var path=kind==1?c.rikaPath():c.getoPath();if(path.size()<2)continue;
+                    Vec3 origin=path.get(0),end=path.get(path.size()-1);
+                    float charge=clash.rikaCharge()*smooth((float)camera.distanceTo(origin),2.2f,5f);
+                    float beam=clash.rikaBeam();
+                    Look side=new Look(kind==1?charge:0,kind==0?charge:0,kind==1?beam:0,kind==0?beam:0,0,.7f,0,0,0,0,clash.time(),1,kind==0?1:0);
+                    if(side.visible())jobs.add(new Job(side,c.rika(),c.geto(),end,end,visibility,c.id(),distance,path));
+                }
+                // Contact and explosion share the original collision centre; neither beam becomes a chord.
+                Look contact=new Look(0,0,0,0,clash.contact(),clash.pressure(),clash.burst(),clash.aftermath(),clash.flash(),0,clash.time());
+                jobs.add(new Job(contact,c.rika(),c.geto(),c.contact(),c.contact(),visibility,c.id(),distance));
+            }
         }
         if (jobs.isEmpty()) { if (energy != null) release(); return; }
         // Distant effects first; at most three full-screen passes per frame.
         jobs.sort((a, b) -> Double.compare(b.distance(), a.distance()));
         for (int i = Math.max(0, jobs.size() - 3); i < jobs.size(); i++) {
             Job j = jobs.get(i);
-            draw(event, j.look(), j.rika().subtract(camera), j.geto().subtract(camera), j.middle().subtract(camera), j.burst().subtract(camera), j.visibility(), j.serial());
+            draw(event, j.look(), j.rika().subtract(camera), j.geto().subtract(camera), j.middle().subtract(camera), j.burst().subtract(camera), j.visibility(), j.serial(),j.path().stream().map(p->p.subtract(camera)).toList());
         }
     }
 
-    private static void draw(RenderLevelStageEvent event, Look look, Vec3 rika, Vec3 geto, Vec3 middle, Vec3 burst, float visibility, int serial) {
+    private static void draw(RenderLevelStageEvent event, Look look, Vec3 rika, Vec3 geto, Vec3 middle, Vec3 burst, float visibility, int serial,java.util.List<Vec3> path) {
         Matrix4f projection = new Matrix4f(event.getProjectionMatrix()).mul(event.getModelViewMatrix());
         Matrix4f inverse = new Matrix4f(projection).invert();
         boolean scissor = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
@@ -182,13 +198,13 @@ public final class YutaGetoClashEffects {
                 energy.bindWrite(true);
                 RenderSystem.clearColor(0, 0, 0, 0); RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
                 volume.setSampler("SceneDepth", SCENE.depth());
-                uniforms(volume, look, inverse, rika, geto, middle, burst, visibility, serial);
+                uniforms(volume, look, inverse, rika, geto, middle, burst, visibility, serial,path);
                 quad(volume);
             }
             composite.setSampler("SceneColor", SCENE.color());
             composite.setSampler("SceneDepth", SCENE.depth());
             composite.setSampler("EnergyLayer", energy.getColorTextureId());
-            uniforms(composite, look, inverse, rika, geto, middle, burst, visibility, serial);
+            uniforms(composite, look, inverse, rika, geto, middle, burst, visibility, serial,path);
             composite.safeGetUniform("ViewProjection").set(projection);
             composite.safeGetUniform("FlashEnabled").set(VfxConfig.flashScale());
             composite.safeGetUniform("Flash").set(look.flash() * visibility);
@@ -227,7 +243,14 @@ public final class YutaGetoClashEffects {
         }
     }
 
-    private static void uniforms(ShaderInstance shader, Look look, Matrix4f inverse, Vec3 rika, Vec3 geto, Vec3 middle, Vec3 burst, float visibility, int serial) {
+    private static void uniforms(ShaderInstance shader, Look look, Matrix4f inverse, Vec3 rika, Vec3 geto, Vec3 middle, Vec3 burst, float visibility, int serial,java.util.List<Vec3> path) {
+        shader.safeGetUniform("BeamPathCount").set((float)path.size());
+        double pathLength=0;for(int i=1;i<path.size();i++)pathLength+=path.get(i).distanceTo(path.get(i-1));
+        shader.safeGetUniform("BeamPathLength").set((float)pathLength);
+        for(int i=0;i<dev.jujutsuvfx.core.BeamPath.MAX_POINTS;i++){
+            Vec3 p=path.isEmpty()?Vec3.ZERO:path.get(Math.min(i,path.size()-1));
+            shader.safeGetUniform("BeamNode"+i).set((float)p.x,(float)p.y,(float)p.z);
+        }
         shader.safeGetUniform("InverseViewProjection").set(inverse);
         shader.safeGetUniform("RikaPos").set((float) rika.x, (float) rika.y, (float) rika.z);
         shader.safeGetUniform("GetoPos").set((float) geto.x, (float) geto.y, (float) geto.z);
