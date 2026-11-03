@@ -15,6 +15,7 @@ public final class ClientEntityStasis {
     private static final Map<UUID,Entry> FROZEN=new HashMap<>();
     private static final class Entry {
         EntityStasis packet;Entity entity;FrozenPose pose;
+        dev.jujutsuvfx.core.StasisDamageClock damageClock;
         Entry(EntityStasis packet){this.packet=packet;}
     }
     private static void ensureLevel(){
@@ -41,6 +42,11 @@ public final class ClientEntityStasis {
             entity.setPos(packet.position());entity.setYRot(packet.yaw());entity.setXRot(packet.pitch());
             entity.setDeltaMovement(packet.velocity());entity.fallDistance=packet.fallDistance();
             entry.entity=entity;entry.pose=new FrozenPose(entity);
+            entry.damageClock=new dev.jujutsuvfx.core.StasisDamageClock(owner.getGameTime());
+        }
+        if(entity instanceof net.minecraft.world.entity.LivingEntity living){
+            var timers=entry.damageClock.advance(owner.getGameTime(),living.invulnerableTime,living.hurtTime);
+            living.invulnerableTime=timers.invulnerability();living.hurtTime=timers.hurt();
         }
         entry.pose.hold(entity);return true;
     }

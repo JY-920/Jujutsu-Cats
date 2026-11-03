@@ -174,12 +174,12 @@ final class YutaGetoCamera {
         boolean rikaWave=spirit&&rika.getInt("Action")==dev.jujutsuvfx.core.RikaSupportClock.WAVE&&rikaAge<36;
         boolean summonReveal=spirit&&rika.getBoolean("Resident")&&mc.level.getGameTime()-rika.getLong("ResidentStart")<24;
         boolean copied=yuta.copiedSpellActive()||cast!=null&&cast.phase()<CatSpell.FLIGHT+1;
-        boolean domainReveal=domain!=null&&domain.age()<55;
+        boolean domainReveal=domain!=null&&domain.age()<dev.jujutsuvfx.core.YutaDomainRules.REVEAL_TICKS;
         boolean ring=action==YutaBladeMotion.RIKA_SUMMON;
         boolean gesture=action==YutaBladeMotion.DOMAIN;
         boolean speech=action==YutaBladeMotion.SPEECH;
         boolean vortex=(geto.action()==GetoCat.UZUMAKI||geto.action()==GetoCat.BLAST)&&vortexAge<GetoVortexMotion.END;
-        boolean getoInsert=mode==Mode.AUTO&&!ring&&!gesture&&!speech
+        boolean getoInsert=mode==Mode.AUTO&&!ring&&!gesture&&!speech&&!domainReveal
                 &&(vortex||!copied&&!domainReveal&&!rikaWave&&geto.action()==GetoCat.SUMMON&&getoAge<40);
         boolean getoShot=getoInsert&&vortex;
         // Changing camera entity here would invalidate the Camera.setup mixin's current frame.

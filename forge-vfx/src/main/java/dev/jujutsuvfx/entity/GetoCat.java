@@ -2,6 +2,7 @@ package dev.jujutsuvfx.entity;
 
 import dev.jujutsuvfx.core.*;
 import dev.jujutsuvfx.server.CatDance;
+import dev.jujutsuvfx.server.DomainFreeze;
 import dev.jujutsuvfx.server.YutaGetoDuel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -349,7 +350,7 @@ public final class GetoCat extends PathfinderMob implements DancingCat {
   if(!YutaGetoDuel.acceptsDamage(this,source))return false;
   if(!level().isClientSide&&debugPose()==0&&source.getEntity() instanceof LivingEntity attacker&&valid(attacker)){
    setTarget(attacker);missingTarget=0;
-   if(action()!=UZUMAKI&&action()!=BLAST&&action()!=RETREAT&&guardCooldown==0&&random.nextFloat()<.35f){
+   if(action()!=UZUMAKI&&action()!=BLAST&&action()!=RETREAT&&guardCooldown==0&&!DomainFreeze.hold(this)&&random.nextFloat()<.35f){
     if(spirits.size()<SpiritRules.LIMIT)summonChimeras(SpiritRules.GUARD,SpiritRules.ASSAULT);guardCooldown=120;start(YutaBladeMotion.GUARD);
    }
    CursedSpirit guard=spirits().stream().filter(s->s.role()==SpiritRules.GUARD&&distanceToSqr(s)<36).findFirst().orElse(null);

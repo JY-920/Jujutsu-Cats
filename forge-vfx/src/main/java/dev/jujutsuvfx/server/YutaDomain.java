@@ -59,6 +59,11 @@ public final class YutaDomain {
  }
  private static Cast cast(LivingEntity cat){var state=STATES.get(cat.getServer());return state==null?null:state.get(cat.getUUID());}
  public static boolean active(LivingEntity cat){return cast(cat)!=null;}
+ public static void cancel(LivingEntity cat){
+  var state=STATES.get(cat.getServer());if(state==null)return;
+  Cast removed=state.remove(cat.getUUID());
+  if(removed!=null)stop(removed,cat.getServer().getTickCount());
+ }
  public static boolean opened(LivingEntity cat){Cast c=cast(cat);return c!=null&&c.opened&&cat.isAlive()&&enabled(cat)&&cat.level()==c.level&&cat.getServer().getTickCount()<c.ends;}
  public static float damageMultiplier(YutaCat cat){Cast c=cast(cat);return YutaDomainRules.damageMultiplier(opened(cat),c!=null&&inside(c,cat));}
  public static void prepare(LivingEntity cat){
@@ -114,7 +119,7 @@ public final class YutaDomain {
    if(now<c.opens)continue;
    if(!c.opened){
     c.opened=true;if(cat instanceof YutaCat y)y.markDomainOpened();
-    if(cat instanceof YutaCat y){c.copies=new YutaCopiedDeck(y.getRandom().nextInt(YutaCopiedDeck.COUNT),y.getRandom().nextInt(YutaCopiedDeck.COUNT-1));c.nextCopy=now+20;c.copyDeadline=c.ends+300;}
+    if(cat instanceof YutaCat y){c.copies=new YutaCopiedDeck(y.getRandom().nextInt(YutaCopiedDeck.COUNT),y.getRandom().nextInt(YutaCopiedDeck.COUNT-1));c.nextCopy=now+YutaDomainRules.REVEAL_TICKS;c.copyDeadline=c.ends+300;}
     c.send(now,false);
    }
    if(cat instanceof net.minecraft.server.level.ServerPlayer player){

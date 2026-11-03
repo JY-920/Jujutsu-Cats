@@ -58,7 +58,8 @@ public final class DomainFreeze {
     private record BriefControl(long start,int ticks) {}
     private static final class Lock {
         final Entity entity;final FrozenPose pose;final ResourceKey<Level> dimension;final Set<Key> casts=new HashSet<>();
-        long stunUntil = -1,damageClock;
+        long stunUntil = -1;
+        final dev.jujutsuvfx.core.StasisDamageClock damageClock;
         final java.util.EnumMap<CatAdaptation.Phenomenon,BriefControl> adaptiveStuns=new java.util.EnumMap<>(CatAdaptation.Phenomenon.class);
         long stunDeadline(){
             long end=stunUntil;
@@ -66,11 +67,12 @@ public final class DomainFreeze {
                     CatAdaptation.controlDuration(entity,entry.getKey(),entry.getValue().ticks));
             return end;
         }
-        Lock(Entity entity){this.entity=entity;pose=new FrozenPose(entity);dimension=entity.level().dimension();damageClock=entity.getServer().getTickCount();}
+        Lock(Entity entity){this.entity=entity;pose=new FrozenPose(entity);dimension=entity.level().dimension();damageClock=new dev.jujutsuvfx.core.StasisDamageClock(entity.getServer().getTickCount());}
         void advanceDamageClock(long now){
-            int elapsed=(int)dev.jujutsuvfx.platform.Numbers.clamp(now-damageClock,0,100000);damageClock=now;
-            if(entity instanceof LivingEntity living&&elapsed>0)
-                living.invulnerableTime=Math.max(0,living.invulnerableTime-elapsed);
+            if(entity instanceof LivingEntity living){
+                var timers=damageClock.advance(now,living.invulnerableTime,living.hurtTime);
+                living.invulnerableTime=timers.invulnerability();living.hurtTime=timers.hurt();
+            }
         }
         void notifyClients(boolean frozen){
             EntityStasis packet=EntityStasis.of(entity,pose,frozen);

@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'net.neoforged.moddev' version '2.0.143'
 }
-version = '0.113.13-neoforge-1.21.1'
+version = '0.113.14-neoforge-1.21.1'
 group = 'dev.jujutsuvfx'
 base { archivesName = 'jujutsu-vfx' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -368,6 +368,13 @@ tasks.register("verifyYutaGetoBeat", JavaExec) {
  mainClass = "dev.jujutsuvfx.core.YutaGetoBeatTest"
 }
 tasks.named("check") { dependsOn "verifyYutaGetoBeat" }
+
+tasks.register("verifyStasisDamageClock", JavaExec) {
+ dependsOn testClasses
+ classpath = sourceSets.test.runtimeClasspath
+ mainClass = "dev.jujutsuvfx.core.StasisDamageClockTest"
+}
+tasks.named("check") { dependsOn "verifyStasisDamageClock" }
 
 tasks.register("verifyYutaFinaleAudio", JavaExec) {
  dependsOn testClasses

@@ -61,7 +61,7 @@ public final class YutaModelGeometryTest {
      }
     }
    }
-   m.applyAction(YutaBladeMotion.DOMAIN,20);
+   m.applyAction(YutaBladeMotion.DOMAIN,dev.jujutsuvfx.core.YutaDomainRules.WINDUP);
    Vector3f leftSeal=pawTip(root,"left_front_leg"),rightSeal=pawTip(root,"right_front_leg");
    if(rightSeal.z>=leftSeal.z-.20f)throw new AssertionError("Yuta domain must extend right paw ahead of the folded left paw");
    if(leftSeal.y>=rightSeal.y-.08f)throw new AssertionError("Yuta left seal stays higher against chest");

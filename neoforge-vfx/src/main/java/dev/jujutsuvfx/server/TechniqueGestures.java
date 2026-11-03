@@ -26,7 +26,7 @@ public final class TechniqueGestures {
         Motion(ServerPlayer owner,int session,int kind,InteractionHand hand,boolean guided) {
             this.owner=owner;level=owner.serverLevel();this.session=session;this.kind=kind;this.hand=hand==InteractionHand.OFF_HAND?1:0;
             ItemStack held=owner.getItemInHand(hand);bound=matches(held,kind)?held.copy():ItemStack.EMPTY;
-            born=owner.getServer().getTickCount();autoRelease=kind==SkillGesture.BLUE?(guided?200:14):kind==SkillGesture.FURNACE?80:(kind==SkillGesture.UZUMAKI||kind==SkillGesture.LOVE_BEAM)?72000:kind==SkillGesture.SPEECH?8:kind==SkillGesture.YUTA?40:26;
+            born=owner.getServer().getTickCount();autoRelease=kind==SkillGesture.BLUE?(guided?200:14):kind==SkillGesture.FURNACE?80:(kind==SkillGesture.UZUMAKI||kind==SkillGesture.LOVE_BEAM)?72000:kind==SkillGesture.SPEECH?8:kind==SkillGesture.YUTA?dev.jujutsuvfx.core.YutaDomainRules.POSE_TICKS:26;
         }
         int age(){return (int)Math.max(0,owner.getServer().getTickCount()-born);}
         SkillGesture snapshot(){return new SkillGesture(owner.getId(),owner.getUUID(),session,kind,hand,age(),release);}

@@ -4,10 +4,13 @@ public final class YutaGetoBeatTest {
  public static void main(String[] args){
   int transitions=0;
   for(int phase=1;phase<YutaGetoBeat.DONE;phase++){
-   check(YutaGetoBeat.next(phase,YutaGetoBeat.duration(phase)-1,1,true)==phase,"minimum action window");
-   check(YutaGetoBeat.next(phase,YutaGetoBeat.duration(phase),1,true)==phase+1,"no skipped beats even terminal");
+   check(YutaGetoBeat.next(phase,YutaGetoBeat.duration(phase)-1,1,false)==phase,"minimum action window");
+   check(YutaGetoBeat.next(phase,YutaGetoBeat.duration(phase),1,false)==phase+1,"normal battle preserves authored beats");
    transitions++;
   }
+  check(YutaGetoBeat.next(YutaGetoBeat.COOP,12,.5f,true)==YutaGetoBeat.SEPARATE,"lethal hit enters finale immediately instead of attacking a one-HP actor during speech/domain");
+  check(YutaGetoBeat.next(YutaGetoBeat.SWARM,0,.1f,true)==YutaGetoBeat.SEPARATE,"a large early hit cannot strand the screenplay at one HP");
+  check(YutaGetoBeat.next(YutaGetoBeat.CHARGE,12,1,true)==YutaGetoBeat.CHARGE,"already committed finale keeps its charge animation");
   check(YutaGetoBeat.next(YutaGetoBeat.MELEE,39,0,false)==YutaGetoBeat.MELEE,"one opening exchange before draw");
   check(YutaGetoBeat.next(YutaGetoBeat.MELEE,40,0,false)==YutaGetoBeat.DRAW,"early draw even when opening attacks are blocked");
   double distance=3;

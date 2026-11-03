@@ -20,7 +20,10 @@ public final class YutaGetoBeat {
   return Math.min(Math.max(0,26-distance),1.05*enter*exit);
  }
  public static int next(int phase,int age,float loss,boolean terminal){
-  if(phase<=NONE||phase>=DONE||age<duration(phase))return phase;
+  if(phase<=NONE||phase>=DONE)return phase;
+  // Stop ordinary exchanges as soon as the last hit consumes the cinematic health reserve.
+  if(terminal&&phase<SEPARATE)return SEPARATE;
+  if(age<duration(phase))return phase;
   // Bounded stagnation recovery also handles unusual mods that constantly heal or fully negate damage.
   if(combat(phase)&&!terminal&&DuelProgress.bounded(loss)<threshold(phase)&&age<duration(phase)+600)return phase;
   return phase+1;

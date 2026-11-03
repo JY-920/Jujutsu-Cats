@@ -160,6 +160,7 @@ final class YutaCombatPose {
    return;
   }
   if(action==DOMAIN){
+   age*=40f/dev.jujutsuvfx.core.YutaDomainRules.POSE_TICKS;
    // Yuta's own seal (ch. 178/249): left fist held to the chest, right palm extended upward.
    // Preserve this asymmetric silhouette on paws; do not substitute Gojo/Sukuna's seal.
    float settle=1-phase(age,32,40),rise=phase(age,0,10)*settle;

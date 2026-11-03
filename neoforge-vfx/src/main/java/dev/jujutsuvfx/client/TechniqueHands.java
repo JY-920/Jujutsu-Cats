@@ -38,7 +38,7 @@ public final class TechniqueHands {
         double release=Double.POSITIVE_INFINITY;long received;int seenAge=-1;
         Motion(int session,int kind,InteractionHand hand,double born,boolean guided,boolean local,ItemStack bound,boolean authoritative) {
             this.session=session;this.kind=kind;this.hand=hand;this.born=born;this.guided=guided;this.local=local;this.bound=bound;
-            autoRelease=kind==BLUE?(guided||!local?200:14):kind==FURNACE?(authoritative?80:32):(kind==UZUMAKI||kind==LOVE_BEAM)?72000:kind==SPEECH?8:kind==YUTA?40:26;received=ClientEffectClock.ticks();
+            autoRelease=kind==BLUE?(guided||!local?200:14):kind==FURNACE?(authoritative?80:32):(kind==UZUMAKI||kind==LOVE_BEAM)?72000:kind==SPEECH?8:kind==YUTA?dev.jujutsuvfx.core.YutaDomainRules.POSE_TICKS:26;received=ClientEffectClock.ticks();
         }
         double age(float partial){return Math.max(0,ClientEffectClock.ticks()+partial-born);}
     }
@@ -112,7 +112,7 @@ public final class TechniqueHands {
         float age=(float)motion.age(partial),released=Double.isFinite(motion.release)
                 ?(float)Math.max(0,ClientEffectClock.ticks()+partial-motion.release):-1;
         if(released>=RETURN_TICKS)return null;
-        float weight=smooth(age/6)*(released<0?1:1-smooth(released/RETURN_TICKS));
+        float weight=smooth(age/(motion.kind==YUTA?18:6))*(released<0?1:1-smooth(released/RETURN_TICKS));
         return new Pose(motion.kind,motion.hand,age,released,weight);
     }
     public static boolean ownsHand(InteractionHand hand,float partial) {

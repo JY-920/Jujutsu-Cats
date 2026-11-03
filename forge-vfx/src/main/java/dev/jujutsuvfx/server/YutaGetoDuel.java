@@ -218,12 +218,18 @@ public final class YutaGetoDuel {
   }
   boolean yutaHeld=DomainFreeze.hold(d.yuta),getoHeld=DomainFreeze.hold(d.geto);
   if(DomainFreeze.hasDomainLock(d.yuta)||DomainFreeze.hasDomainLock(d.geto)){abort(d);return;}
+  d.terminal|=Math.min(d.yuta.getHealth(),d.geto.getHealth())<=1.1f;
+  d.progress=YutaGetoBeat.progress(d.progress,d.yuta.getHealth(),d.yuta.getMaxHealth(),d.geto.getHealth(),d.geto.getMaxHealth());
+  // Neither speech nor Yuta's own domain may strand ordinary combat on the one-HP reserve.
+  if(d.terminal&&d.phase<SEPARATE){
+   YutaDomain.cancel(d.yuta);
+   d.phase=YutaGetoBeat.next(d.phase,age(d),d.progress,true);d.start=d.level.getGameTime();
+   enter(d);remember(d,false);publish(d);return;
+  }
   // Yuta's own speech shares DomainFreeze with domains. Keep its three-second stun and
   // the current scene, instead of cancelling the entire pair when a normal attack lands.
   if(d.phase==COOP||d.phase==RANGED)d.yuta.cinematicRika(true);
   if(yutaHeld||getoHeld){d.start++;publish(d);return;}
-  d.terminal|=Math.min(d.yuta.getHealth(),d.geto.getHealth())<=1.1f;
-  d.progress=YutaGetoBeat.progress(d.progress,d.yuta.getHealth(),d.yuta.getMaxHealth(),d.geto.getHealth(),d.geto.getMaxHealth());
   // The half-way domain: while Yuta's own domain stands, the combat beat holds instead of advancing.
   if(YutaDomain.active(d.yuta)){
    if(!d.domainUsed){d.domainUsed=true;remember(d,false);}

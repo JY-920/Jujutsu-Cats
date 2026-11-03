@@ -2,7 +2,7 @@ package dev.jujutsuvfx.core;
 
 /** Authored ticks, health milestones and deterministic battlefield distribution. */
 public final class YutaDomainRules {
- public static final int WINDUP=30,POSE_TICKS=40,PICK_TICKS=18,PICK_CONTACT=9,CLASH_TICKS=100;
+ public static final int WINDUP=50,POSE_TICKS=70,REVEAL_TICKS=45,PICK_TICKS=18,PICK_CONTACT=9,CLASH_TICKS=100;
  public static final float RADIUS=40;
  private YutaDomainRules(){}
  public static boolean playerChargeComplete(int ticks){return ticks>=WINDUP;}
